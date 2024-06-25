@@ -1,0 +1,39 @@
+name: "0_Local: Create Release"
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '!v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+'
+      - '!v[0-9]'
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  CreateRelease:
+    name: Create Release
+    uses: ./.github/workflows/createRelease.yml
+    with:
+      generateReleaseNotes: true
+      isDraft: false
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
+
+  PrepareTags:
+    name: PrepareTags
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: ReplaceMajorTag
+        id: replaceMajorTag
+        run: |
+          git fetch --tags
+          git tag -d v1
+          git push origin --delete v1
+          git tag v1 ${{github.ref}}
+          git push origin v1

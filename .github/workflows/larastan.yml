@@ -1,0 +1,38 @@
+name: PHP Code Analysis
+
+on:
+  workflow_call:
+    inputs:
+      phpVersion:
+        type: string
+        description: 'PHP Version'
+        required: false
+        default: '8.2'
+      path:
+        type: string
+        description: 'Path to analyze'
+        required: false
+        default: 'app/ app_modules/'
+      branch:
+        type: string
+        description: 'The branch to analize'
+        required: false
+        default: 'main'
+
+jobs:
+  StaticAnalysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+      - name: Install Dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
+      - uses: php-actions/phpstan@v3
+        with:
+          path: ${{ inputs.path }}
+          php_version: ${{ inputs.phpVersion }}
+          configuration: phpstan.neon

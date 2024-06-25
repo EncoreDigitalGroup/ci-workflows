@@ -1,0 +1,47 @@
+name: PestUnitTests
+on:
+  workflow_call:
+    inputs:
+      phpVersion:
+        type: string
+        description: 'PHP Version'
+        required: false
+        default: '8.2'
+      branch:
+        type: string
+        description: 'The branch to analize'
+        required: false
+        default: 'main'
+      enforceCoverage:
+        type: boolean
+        description: 'Should the coverage requirement be enforced?'
+        required: false
+        default: true
+
+jobs:
+  RunPest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.phpVersion }}
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Pest Tests (with Coverage)
+        if: ${{ inputs.enforceCoverage }}
+        run: ./vendor/bin/pest --coverage --min=80
+
+      - name: Run Pest Tests (without Coverage)
+        if: ${{ !inputs.enforceCoverage }}
+        run: ./vendor/bin/pest
