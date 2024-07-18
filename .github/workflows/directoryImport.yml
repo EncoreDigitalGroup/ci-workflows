@@ -1,0 +1,58 @@
+name: DirectoryImport
+on:
+    workflow_call:
+        secrets:
+            token:
+                required: true
+        inputs:
+            sourceRepository:
+                type: string
+                description: 'Source Repository'
+                required: true
+            sourceDirectory:
+                type: string
+                description: 'Directory Source'
+                required: true
+            targetRepopository:
+                type: string
+                description: 'Target Repository'
+                required: true
+            targetDirectory:
+                type: string
+                description: 'Target Directory'
+                required: true
+            targetDirectoryName:
+                type: string
+                description: 'Target Directory Name'
+                required: false
+                default: 'empty_value'
+            commitMessage:
+                type: string
+                description: 'Commit Message'
+                required: false
+                default: '[Automated] DirectorySync'
+
+jobs:
+    DirectorySync:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+                with:
+                    repository: ${{inputs.sourceRepository}}
+                    path: "directoryImport/${{inputs.sourceDirectory}}"
+
+            # Copy the 'post' folder
+            -   name: DirectorySync
+                uses: encoredigitalgroup/copy_file_to_another_repo_action@main
+                env:
+                    API_TOKEN_GITHUB: ${{ secrets.token }}
+                with:
+                    source_files: "directoryImport/${{inputs.sourceDirectory}}"
+                    destination_repo: ${{inputs.targetRepository}} # Target repo
+                    destination_folder: ${{inputs.targetDirectory}} # Folder where to copy it
+                    destination_folder_name: ${{inputs.targetDirectoryName}} # Folder where to copy it
+                    user_email: ghbot@encoredigitalgroup.com
+                    user_name: "EncoreBot"
+                    commit_message: ${{inputs.commitMessage}} # Input ${{ github.event.head_commit.message }} to preserve the original commit message
+                    push_with_force: true
