@@ -33,7 +33,7 @@ jobs:
                 run: npm install
 
             -   name: Format Pull Request Title
-                uses: EncoreDigitalGroup/action-pr-title-format@main
+                uses: EncoreDigitalGroup/action-pr-title-format@v1
                 with:
                     GITHUB_TOKEN: ${{ secrets.token }}
                     BRANCH_NAME: ${{ inputs.branch }}
