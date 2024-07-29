@@ -1,0 +1,41 @@
+name: Format Pull Request Title
+
+on:
+    workflow_call:
+        inputs:
+            branch:
+                type: string
+                required: true
+            pullRequestNumber:
+                type: string
+                required: true
+            repository:
+                type: string
+                required: true
+
+        secrets:
+            token:
+                required: true
+
+jobs:
+    FormatTitle:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout Repository
+                uses: actions/checkout@v4
+
+            -   name: Setup Node.js
+                uses: actions/setup-node@v3
+                with:
+                    node-version: '20'
+
+            -   name: Install Dependencies
+                run: npm install
+
+            -   name: Format Pull Request Title
+                uses: EncoreDigitalGroup/action-pr-title-format@main
+                with:
+                    GITHUB_TOKEN: ${{ secrets.token }}
+                    BRANCH_NAME: ${{ inputs.branch }}
+                    PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                    GITHUB_REPOSITORY: ${{ inputs.repository }}
