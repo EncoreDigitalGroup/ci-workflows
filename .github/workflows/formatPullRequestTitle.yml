@@ -1,0 +1,33 @@
+name: Format Pull Request Title
+
+on:
+    workflow_call:
+        inputs:
+            branch:
+                type: string
+                required: true
+            pullRequestNumber:
+                type: string
+                required: true
+            repository:
+                type: string
+                required: true
+
+        secrets:
+            token:
+                required: true
+
+jobs:
+    FormatTitle:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout Repository
+                uses: actions/checkout@v4
+
+            -   name: Format Pull Request Title
+                uses: EncoreDigitalGroup/action-format-pr-title@main
+                with:
+                    GITHUB_TOKEN: ${{ secrets.token }}
+                    BRANCH_NAME: ${{ inputs.branch }}
+                    PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                    GITHUB_REPOSITORY: ${{ inputs.repository }}
