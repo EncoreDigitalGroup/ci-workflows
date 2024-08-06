@@ -30,7 +30,7 @@ on:
                 type: string
                 description: 'Commit Message'
                 required: false
-                default: '[Automated] DirectorySync'
+                default: '[Automated] DirectoryImport'
 
 jobs:
     DirectorySync:

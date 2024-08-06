@@ -1,38 +1,38 @@
 name: Create Release
 
 on:
-  workflow_call:
-    secrets:
-      token:
-        required: true
-    inputs:
-      preRelease:
-        type: boolean
-        description: 'Pre-release'
-        required: false
-        default: false
-      generateReleaseNotes:
-        type: boolean
-        description: 'Generate release notes'
-        required: false
-        default: true
-      isDraft:
-        type: boolean
-        description: 'Is draft'
-        required: false
-        default: false
+    workflow_call:
+        secrets:
+            token:
+                required: true
+        inputs:
+            preRelease:
+                type: boolean
+                description: 'Pre-release'
+                required: false
+                default: false
+            generateReleaseNotes:
+                type: boolean
+                description: 'Generate release notes'
+                required: false
+                default: true
+            isDraft:
+                type: boolean
+                description: 'Is draft'
+                required: false
+                default: false
 
 jobs:
-  CreateRelease:
-    name: CreateRelease
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create Release
-        id: createRelease
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.token }}
-        with:
-          generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
-          draft: ${{ inputs.isDraft }}
-          prerelease: ${{ inputs.preRelease }}
+    CreateRelease:
+        name: CreateRelease
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Create Release
+                id: createRelease
+                uses: ncipollo/release-action@v1
+                env:
+                    GITHUB_TOKEN: ${{ secrets.token }}
+                with:
+                    generateReleaseNotes: ${{ inputs.generateReleaseNotes }}
+                    draft: ${{ inputs.isDraft }}
+                    prerelease: ${{ inputs.preRelease }}
