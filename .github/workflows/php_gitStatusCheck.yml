@@ -1,6 +1,11 @@
 name: Git Status Check for PHP
 on:
     workflow_call:
+        inputs:
+            branch:
+                type: string
+                required: false
+                default: main
         outputs:
             shouldRun:
                 description: 'Whether specified files were modified'
@@ -25,7 +30,7 @@ jobs:
                     # Fetch the pull request's merge commit
                     pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
                     git fetch origin +refs/pull/${pr_number}/merge
-                    diff_files=$(git diff --name-only origin/main FETCH_HEAD)
+                    diff_files=$(git diff --name-only origin/${{inputs.branch}} FETCH_HEAD)
 
                     # Output the diff files for debugging
                     echo "Changed files:"
