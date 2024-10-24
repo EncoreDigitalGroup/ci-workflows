@@ -4,48 +4,38 @@ name: Duster Fix
 # Checkout Duster's documentation for a workaround
 
 on:
-    # push:
-    #    branches: [ master ]
-    workflow_call:
-        inputs:
-            phpVersion:
-                type: string
-                required: false
-                default: '8.3'
+  # push:
+  #    branches: [ master ]
+  workflow_call:
 
 jobs:
-    Duster:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        steps:
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
+  Duster:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
-            -   uses: shivammathur/setup-php@v2
-                with:
-                    php-version: ${{ inputs.phpVersion }}
+      - name: "Duster Fix"
+        uses: tighten/duster-action@v2
+        with:
+          args: fix
 
-            -   name: Install Dependencies
-                run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        id: auto_commit_action
+        with:
+          commit_message: Dusting
+          commit_user_name: EncoreBot
+          commit_user_email: ghbot@encoredigitalgroup.com
 
-            -   name: Run Duster
-                run: vendor/bin/duster fix
+      - name: Ignore Duster commit in git blame
+        if: steps.auto_commit_action.outputs.changes_detected == 'true'
+        run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
 
-            -   uses: stefanzweifel/git-auto-commit-action@v5
-                id: auto_commit_action
-                with:
-                    commit_message: Dusting
-                    commit_user_name: EncoreBot
-                    commit_user_email: ghbot@encoredigitalgroup.com
-
-            -   name: Ignore Duster commit in git blame
-                if: steps.auto_commit_action.outputs.changes_detected == 'true'
-                run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
-
-            -   uses: stefanzweifel/git-auto-commit-action@v5
-                with:
-                    commit_message: Ignore Dusting commit in git blame
-                    commit_user_name: EncoreBot
-                    commit_user_email: ghbot@encoredigitalgroup.com
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Ignore Dusting commit in git blame
+          commit_user_name: EncoreBot
+          commit_user_email: ghbot@encoredigitalgroup.com
