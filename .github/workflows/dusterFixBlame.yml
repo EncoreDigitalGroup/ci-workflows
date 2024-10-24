@@ -7,11 +7,6 @@ on:
     # push:
     #    branches: [ master ]
     workflow_call:
-        inputs:
-            phpVersion:
-                type: string
-                required: false
-                default: '8.3'
 
 jobs:
     Duster:
@@ -23,15 +18,10 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
 
-            -   uses: shivammathur/setup-php@v2
+            -   name: "Duster Fix"
+                uses: tighten/duster-action@v2
                 with:
-                    php-version: ${{ inputs.phpVersion }}
-
-            -   name: Install Dependencies
-                run: composer install --no-interaction --prefer-dist --optimize-autoloader --ignore-platform-reqs
-
-            -   name: Run Duster
-                run: vendor/bin/duster fix
+                    args: fix
 
             -   uses: stefanzweifel/git-auto-commit-action@v5
                 id: auto_commit_action
