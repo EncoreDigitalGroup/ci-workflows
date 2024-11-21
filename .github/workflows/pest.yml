@@ -6,7 +6,7 @@ on:
                 type: string
                 description: 'PHP Version'
                 required: false
-                default: '8.2'
+                default: '8.3'
             branch:
                 type: string
                 description: 'The branch to analize'

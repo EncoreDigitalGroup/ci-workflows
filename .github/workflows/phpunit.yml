@@ -1,31 +1,31 @@
 name: PHPUnit
 
 on:
-  workflow_call:
-    inputs:
-      phpVersion:
-        type: string
-        description: 'PHP Version'
-        required: false
-        default: '8.2'
+    workflow_call:
+        inputs:
+            phpVersion:
+                type: string
+                description: 'PHP Version'
+                required: false
+                default: '8.3'
 
 jobs:
-  RunPHPUnit:
-    runs-on: ubuntu-latest
+    RunPHPUnit:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ inputs.phpVersion }}
-          tools: composer:v2
-          coverage: xdebug
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ inputs.phpVersion }}
+                    tools: composer:v2
+                    coverage: xdebug
 
-      - name: Install Dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+            -   name: Install Dependencies
+                run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Run PHPUnit Test
-        run: ./vendor/bin/phpunit
+            -   name: Run PHPUnit Test
+                run: ./vendor/bin/phpunit

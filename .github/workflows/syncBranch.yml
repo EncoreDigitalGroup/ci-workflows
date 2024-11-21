@@ -1,48 +1,48 @@
 name: Sync Branch
 
 on:
-  workflow_call:
-    secrets:
-      token:
-        required: true
-    inputs:
-      branch:
-        type: string
-        description: 'Branch to sync'
-        required: true
-      force:
-        type: boolean
-        description: 'Force push'
-        required: false
-        default: false
+    workflow_call:
+        secrets:
+            token:
+                required: true
+        inputs:
+            branch:
+                type: string
+                description: 'Branch to sync'
+                required: true
+            force:
+                type: boolean
+                description: 'Force push'
+                required: false
+                default: false
 
 jobs:
-  SyncBranch:
-    name: SyncBranch
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    SyncBranch:
+        name: SyncBranch
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
 
-      - uses: EncoreDigitalGroup/action-sync-branch@main
-        with:
-          branch: ${{ inputs.branch }}
-          token: ${{ secrets.token }}
-          force: ${{ inputs.force }}
+            -   uses: EncoreDigitalGroup/action-sync-branch@main
+                with:
+                    branch: ${{ inputs.branch }}
+                    token: ${{ secrets.token }}
+                    force: ${{ inputs.force }}
 
-      - name: 'Get Previous Tag'
-        id: previousTag
-        uses: 'WyriHaximus/github-action-get-previous-tag@master'
+            -   name: 'Get Previous Tag'
+                id: previousTag
+                uses: 'WyriHaximus/github-action-get-previous-tag@master'
 
-      - name: WriteVersionFile
-        id: writeVersionFile
-        run: |
-          rm -f ./.version
-          echo ${{ steps.previousTag.outputs.tag }} >> .version
+            -   name: WriteVersionFile
+                id: writeVersionFile
+                run: |
+                    rm -f ./.version
+                    echo ${{ steps.previousTag.outputs.tag }} >> .version
 
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          branch: ${{ inputs.branch }}
-          commit_message: ${{ steps.previousTag.outputs.tag }}
-          commit_user_name: EncoreBot
-          commit_user_email: ghbot@encoredigitalgroup.com
+            -   uses: stefanzweifel/git-auto-commit-action@v5
+                with:
+                    branch: ${{ inputs.branch }}
+                    commit_message: ${{ steps.previousTag.outputs.tag }}
+                    commit_user_name: EncoreBot
+                    commit_user_email: ghbot@encoredigitalgroup.com

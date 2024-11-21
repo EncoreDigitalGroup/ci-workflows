@@ -7,7 +7,7 @@ on:
                 type: string
                 description: 'PHP Version'
                 required: false
-                default: '8.2'
+                default: '8.3'
             path:
                 type: string
                 description: 'Path to analyze'
