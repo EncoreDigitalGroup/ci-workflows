@@ -12,8 +12,15 @@ outputs:
 runs:
     using: 'composite'
     steps:
+        -   name: Checkout
+            uses: actions/checkout@v4
+
+        -   name: Set execute permissions
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
+
         -   name: Check Workflow Criteria
             shell: bash
-            run: ./entrypoint.sh
+            run: ${{github.action_path}}/entrypoint.sh
             env:
                 BRANCH_NAME: ${{ inputs.branch }}
