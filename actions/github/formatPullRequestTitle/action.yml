@@ -13,7 +13,6 @@ inputs:
         description: 'The branch name'
         required: true
         type: string
-secrets:
     token:
         description: 'GitHub token'
         required: true
