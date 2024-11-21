@@ -15,7 +15,7 @@ permissions:
 jobs:
     CreateRelease:
         name: Create Release
-        uses: ./.github/workflows/createRelease.yml
+        uses: ./.github/workflows/github_createRelease.yml
         with:
             generateReleaseNotes: true
             isDraft: false
@@ -26,8 +26,8 @@ jobs:
         name: PrepareTags
         runs-on: ubuntu-latest
         steps:
-            -   name: Checkout
-                uses: actions/checkout@v4
+            -   name: ReplaceMajorTag
+                id: replaceMajorTag
                 run: |
                     git fetch --tags
                     major_version=$(echo "${GITHUB_REF#refs/tags/}" | grep -oP '^v\K[0-9]+')
