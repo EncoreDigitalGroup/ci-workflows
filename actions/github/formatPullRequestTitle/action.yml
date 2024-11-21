@@ -22,9 +22,9 @@ runs:
         -   name: Checkout
             uses: actions/checkout@v4
 
-        - name: Set execute permissions
-          shell: bash
-          run: chmod +x ${{github.action_path}}/entrypoint.sh
+        -   name: Set execute permissions
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
 
         -   name: Format Pull Request Title
             shell: bash
