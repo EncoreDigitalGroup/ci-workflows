@@ -34,3 +34,6 @@ jobs:
             -   name: Run PHPStan
                 run: |
                     $GITHUB_WORKSPACE/vendor/bin/phpstan analyse ${{ inputs.path }}
+            -   name: Upgrade to v2.0
+                id: upgradeMessage
+                run: echo "Version 2.0 has been released. Time to upgrade"

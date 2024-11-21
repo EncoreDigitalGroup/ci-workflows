@@ -56,3 +56,7 @@ jobs:
                     user_name: "EncoreBot"
                     commit_message: ${{inputs.commitMessage}} # Input ${{ github.event.head_commit.message }} to preserve the original commit message
                     push_with_force: true
+
+            -   name: Upgrade to v2.0
+                id: upgradeMessage
+                run: echo "Version 2.0 has been released. Time to upgrade"

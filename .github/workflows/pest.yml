@@ -63,3 +63,7 @@ jobs:
             -   name: Run Parallel Pest Tests (without Coverage)
                 if: ${{ !inputs.enforceCoverage && inputs.runParallel }}
                 run: ./vendor/bin/pest
+
+            -   name: Upgrade to v2.0
+                id: upgradeMessage
+                run: echo "Version 2.0 has been released. Time to upgrade"
