@@ -1,0 +1,30 @@
+name: 'Format Pull Request Title'
+description: 'Formats the pull request title based on the branch name'
+inputs:
+    repository:
+        description: 'The repository name'
+        required: true
+        type: string
+    pullRequestNumber:
+        description: 'The pull request number'
+        required: true
+        type: string
+    branch:
+        description: 'The branch name'
+        required: true
+        type: string
+secrets:
+    token:
+        description: 'GitHub token'
+        required: true
+runs:
+    using: 'composite'
+    steps:
+        -   name: Format Pull Request Title
+            shell: bash
+            run: ./entrypoint.sh
+            env:
+                GH_TOKEN: ${{ secrets.token }}
+                GH_REPOSITORY: ${{ inputs.repository }}
+                PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                BRANCH_NAME: ${{ inputs.branch }}
