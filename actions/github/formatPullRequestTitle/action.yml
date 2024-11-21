@@ -19,11 +19,18 @@ inputs:
 runs:
     using: 'composite'
     steps:
+        -   name: Checkout
+            uses: actions/checkout@v4
+
+        - name: Set execute permissions
+          shell: bash
+          run: chmod +x ${{github.action_path}}/entrypoint.sh
+
         -   name: Format Pull Request Title
             shell: bash
-            run: ./entrypoint.sh
+            run: ${{github.action_path}}/entrypoint.sh
             env:
-                GH_TOKEN: ${{ secrets.token }}
+                GH_TOKEN: ${{ inputs.token }}
                 GH_REPOSITORY: ${{ inputs.repository }}
                 PR_NUMBER: ${{ inputs.pullRequestNumber }}
                 BRANCH_NAME: ${{ inputs.branch }}
