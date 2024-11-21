@@ -1,0 +1,19 @@
+name: Git Status Check for PHP
+description: "Determines if specific files have changes (*.php, composer.json, composer.lock, package.json, and package-lock.json)"
+inputs:
+    branch:
+        type: string
+        required: false
+        default: main
+outputs:
+    shouldRun:
+        description: 'Whether specified files were modified'
+        value: ${{ jobs.GitStatusCheck.outputs.shouldRun }}
+runs:
+    using: 'composite'
+    steps:
+        -   name: Check Workflow Criteria
+            shell: bash
+            run: ./entrypoint.sh
+            env:
+                BRANCH_NAME: ${{ inputs.branch }}
