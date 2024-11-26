@@ -1,0 +1,36 @@
+name: Rector
+inputs:
+    branch:
+        type: string
+        required: false
+        default: main
+runs:
+    using: 'composite'
+    steps:
+        -   name: Checkout
+            uses: actions/checkout@v4
+
+        -   name: Set execute permissions
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
+
+        -   name: Run Rector
+            shell: bash
+            run: ${{github.action_path}}/entrypoint.sh
+
+        -   uses: stefanzweifel/git-auto-commit-action@v5
+            id: auto_commit_action
+            with:
+                commit_message: Rectifying
+                commit_user_name: EncoreBot
+                commit_user_email: ghbot@encoredigitalgroup.com
+
+        -   name: Ignore Rector commit in git blame
+            if: steps.auto_commit_action.outputs.changes_detected == 'true'
+            run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
+
+        -   uses: stefanzweifel/git-auto-commit-action@v5
+            with:
+                commit_message: Ignore Rector commit in git blame
+                commit_user_name: EncoreBot
+                commit_user_email: ghbot@encoredigitalgroup.com
