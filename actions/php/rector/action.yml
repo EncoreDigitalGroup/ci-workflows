@@ -4,11 +4,28 @@ inputs:
         type: string
         required: false
         default: main
+    repository:
+        type: string
+        required: true
+    phpVersion:
+        type: string
+        required: false
+        default: "8.3"
 runs:
     using: 'composite'
     steps:
-        -   name: Checkout
+        -   uses: shivammathur/setup-php@v2
+            with:
+                php-version: "${{ inputs.phpVersion }}"
+
+        -   name: Checkout Action
             uses: actions/checkout@v4
+
+        -   name: Checkout Repository
+            uses: actions/checkout@v4
+            with:
+                repository: "${{ inputs.repository }}"
+                ref: "${{ inputs.branch }}"
 
         -   name: Set execute permissions
             shell: bash
