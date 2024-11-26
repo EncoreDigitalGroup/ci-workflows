@@ -27,6 +27,7 @@ runs:
 
         -   name: Ignore Rector commit in git blame
             if: steps.auto_commit_action.outputs.changes_detected == 'true'
+            shell: bash
             run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
 
         -   uses: stefanzweifel/git-auto-commit-action@v5
