@@ -42,13 +42,13 @@ runs:
                 commit_user_name: EncoreBot
                 commit_user_email: ghbot@encoredigitalgroup.com
 
-        -   name: Ignore Rector commit in git blame
+        -   name: Ignore Rector Commit in Git Blame
             if: steps.auto_commit_action.outputs.changes_detected == 'true'
             shell: bash
             run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
 
         -   uses: stefanzweifel/git-auto-commit-action@v5
             with:
-                commit_message: Ignore Rector commit in git blame
+                commit_message: Ignoring Rector Commit in Git Blame
                 commit_user_name: EncoreBot
                 commit_user_email: ghbot@encoredigitalgroup.com
