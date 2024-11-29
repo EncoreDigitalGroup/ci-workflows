@@ -11,6 +11,9 @@ inputs:
         type: string
         required: false
         default: "8.3"
+
+
+
 runs:
     using: 'composite'
     steps:
@@ -33,22 +36,6 @@ runs:
 
         -   name: Run Rector
             shell: bash
+            env:
+                GH_ACTION_PATH: ${{ github.action_path }}
             run: ${{github.action_path}}/entrypoint.sh
-
-        -   uses: stefanzweifel/git-auto-commit-action@v5
-            id: auto_commit_action
-            with:
-                commit_message: Rectifying
-                commit_user_name: EncoreBot
-                commit_user_email: ghbot@encoredigitalgroup.com
-
-        -   name: Ignore Rector Commit in Git Blame
-            if: steps.auto_commit_action.outputs.changes_detected == 'true'
-            shell: bash
-            run: echo ${{ steps.auto_commit_action.outputs.commit_hash }} >> .git-blame-ignore-revs
-
-        -   uses: stefanzweifel/git-auto-commit-action@v5
-            with:
-                commit_message: Ignoring Rector Commit in Git Blame
-                commit_user_name: EncoreBot
-                commit_user_email: ghbot@encoredigitalgroup.com
