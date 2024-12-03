@@ -1,0 +1,36 @@
+name: "Code Style"
+inputs:
+    branch:
+        type: string
+        required: false
+        default: "main"
+    repository:
+        type: string
+        required: true
+    phpVersion:
+        type: string
+        required: false
+        default: "8.3"
+runs:
+    using: 'composite'
+    steps:
+        -   uses: shivammathur/setup-php@v2
+            with:
+                php-version: "${{ inputs.phpVersion }}"
+
+        -   name: Checkout Repository
+            uses: actions/checkout@v4
+            with:
+                repository: "${{ inputs.repository }}"
+                ref: "${{ inputs.branch }}"
+
+        -   name: Set execute permissions
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
+
+        -   name: "Apply Code Style"
+            shell: bash
+            env:
+                GH_REPO: ${{ inputs.repository }}
+                GH_BRANCH: ${{ inputs.branch }}
+            run: ${{github.action_path}}/entrypoint.sh
