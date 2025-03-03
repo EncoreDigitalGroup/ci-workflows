@@ -1,0 +1,27 @@
+name: Git Status Check for TypeScript
+description: "Determines if specific files have changes (*.ts, package.json, and package-lock.json)"
+inputs:
+    branch:
+        type: string
+        required: false
+        default: main
+outputs:
+    shouldRun:
+        description: 'Whether specified files were modified'
+        value: ${{ steps.CheckWorkflowCriteria.outputs.shouldRun }}
+runs:
+    using: 'composite'
+    steps:
+        -   name: Checkout
+            uses: actions/checkout@v4
+
+        -   name: Set execute permissions
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
+
+        -   name: Check Workflow Criteria
+            id: CheckWorkflowCriteria
+            shell: bash
+            run: ${{github.action_path}}/entrypoint.sh
+            env:
+                BRANCH_NAME: ${{ inputs.branch }}
