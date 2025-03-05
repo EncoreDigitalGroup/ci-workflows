@@ -14,6 +14,10 @@ inputs:
 runs:
     using: 'composite'
     steps:
+        -   name: Deprecation Warning
+            shell: bash
+            run: echo "This action is deprecated. Use the rector action instead."
+
         -   uses: shivammathur/setup-php@v2
             with:
                 php-version: "${{ inputs.phpVersion }}"
