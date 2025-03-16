@@ -3,6 +3,10 @@ name: Static Analysis
 on:
     workflow_call:
         inputs:
+            branch:
+                type: string
+                required: false
+                default: "main"
             goVersion:
                 type: string
                 required: false
@@ -13,6 +17,8 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.branch }}
 
             -   name: Set up Go
                 uses: actions/setup-go@v5
