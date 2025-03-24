@@ -32,6 +32,7 @@ runs:
 
         -   name: "Format Pull Request Title (Go) [WARNING: This is an experimental feature]"
             if: ${{ inputs.useGo }}
+            shell: bash
             run: go run ${{github.action_path}}/main.go
             env:
                 GH_TOKEN: ${{ inputs.token }}
