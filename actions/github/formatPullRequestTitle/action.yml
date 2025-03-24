@@ -24,12 +24,15 @@ inputs:
 runs:
     using: 'composite'
     steps:
-        -   name: "Format Pull Request Title (Go) [WARNING: This is an experimental feature]"
+        -   name: Setup Go
             if: ${{ inputs.useGo }}
             uses: actions/setup-go@v5
-            run: go run ${{github.action_path}}/main.go
             with:
                 go-version: '>=1.24.0'
+
+        -   name: "Format Pull Request Title (Go) [WARNING: This is an experimental feature]"
+            if: ${{ inputs.useGo }}
+            run: go run ${{github.action_path}}/main.go
             env:
                 GH_TOKEN: ${{ inputs.token }}
                 GH_REPOSITORY: ${{ inputs.repository }}
