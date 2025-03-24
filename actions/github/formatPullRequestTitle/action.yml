@@ -16,17 +16,33 @@ inputs:
     token:
         description: 'GitHub token'
         required: true
+    useGo:
+        description: 'Use the Go version of the action. Default is false'
+        required: false
+        default: false
+        type: boolean
 runs:
     using: 'composite'
     steps:
-        -   name: Checkout
-            uses: actions/checkout@v4
+        -   name: "Format Pull Request Title (Go) [WARNING: This is an experimental feature]"
+            if: ${{ inputs.useGo }}
+            uses: actions/setup-go@v5
+            run: go run ${{github.action_path}}/main.go
+            with:
+                go-version: '>=1.24.0'
+            env:
+                GH_TOKEN: ${{ inputs.token }}
+                GH_REPOSITORY: ${{ inputs.repository }}
+                PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                BRANCH_NAME: ${{ inputs.branch }}
 
         -   name: Set execute permissions
+            if: ${{ !inputs.useGo }}
             shell: bash
             run: chmod +x ${{github.action_path}}/entrypoint.sh
 
         -   name: Format Pull Request Title
+            if: ${{ !inputs.useGo }}
             shell: bash
             run: ${{github.action_path}}/entrypoint.sh
             env:
