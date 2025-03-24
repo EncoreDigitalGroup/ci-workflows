@@ -30,7 +30,6 @@ runs:
             with:
                 go-version: '>=1.24.1'
                 go-version-file: '${{github.action_path}}/go.mod'
-                cache: 'false'
             env:
                 GOMOD: "${{github.action_path}}/go.mod"
 
