@@ -71,7 +71,7 @@ func main() {
 	// Main logic: update title if it doesn't match
 	if !branchNameMatches(repoOwner, repoName, prNumber) {
 		fmt.Println("Pull Request Title Should Be Updated.")
-		updatePullRequestTitle(branchName, repoName, prNumber, branchName)
+		updatePullRequestTitle(repoOwner, repoName, prNumber, branchName)
 	}
 }
 
