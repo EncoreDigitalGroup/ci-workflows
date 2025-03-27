@@ -10,7 +10,7 @@ on:
             goVersion:
                 type: string
                 required: false
-                default: "1.21"
+                default: "1.24"
 
 jobs:
     StaticAnalysis:
