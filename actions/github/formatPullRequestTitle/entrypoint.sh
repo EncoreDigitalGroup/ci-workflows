@@ -61,6 +61,9 @@ branchNameMatches() {
 }
 
 act() {
+  COL_NOTICE_YELLOW="\033[33m"
+  COL_RESET="\033[0m"
+  echo -e "${COL_NOTICE_YELLOW}NOTICE: The shell script version of this action will be removed in the next major version and will be replaced with the version written in Go. No action is required from you unless you opted into the Go preview.${COL_RESET}"
   if ! branchNameMatches "$branchName"; then
     echo "Pull Request Title Should Be Updated."
     updatePullRequestTitle "$branchName"
