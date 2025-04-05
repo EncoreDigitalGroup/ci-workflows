@@ -17,10 +17,10 @@ should_run_entire_workflow=false
 # Check each file in the diff
 for file in $diff_files; do
     if [[ "$file" == *.php ]] ||
-       [[ "$file" == */composer.json ]] ||
-       [[ "$file" == */composer.lock ]] ||
-       [[ "$file" == */package.json ]] ||
-       [[ "$file" == */package-lock.json ]]; then
+       [[ "$file" == *composer.json ]] ||
+       [[ "$file" == *composer.lock ]] ||
+       [[ "$file" == *package.json ]] ||
+       [[ "$file" == *package-lock.json ]]; then
         echo "Triggering file is $file"
         should_run_entire_workflow=true
         break
