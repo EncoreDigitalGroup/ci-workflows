@@ -24,8 +24,22 @@ jobs:
                     tools: composer:v2
                     coverage: xdebug
 
+            -   name: Restore Composer Cache
+                uses: actions/cache/restore@v4
+                id: restoreComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
             -   name: Install Dependencies
                 run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            -   name: Save Composer Cache
+                uses: actions/cache/save@v4
+                id: saveComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
 
             -   name: Run PHPUnit Test
                 run: ./vendor/bin/phpunit

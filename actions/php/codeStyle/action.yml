@@ -14,10 +14,6 @@ inputs:
 runs:
     using: 'composite'
     steps:
-        -   name: Deprecation Warning
-            shell: bash
-            run: echo "This action is deprecated. Use the rector action instead."
-
         -   uses: shivammathur/setup-php@v2
             with:
                 php-version: "${{ inputs.phpVersion }}"
@@ -28,9 +24,17 @@ runs:
                 repository: "${{ inputs.repository }}"
                 ref: "${{ inputs.branch }}"
 
+        -   name: Restore Composer Cache
+            uses: actions/cache/restore@v4
+            id: restoreComposerCache
+            with:
+                path: ~/.composer/cache
+                key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
         -   name: Set execute permissions
             shell: bash
             run: chmod +x ${{github.action_path}}/entrypoint.sh
+
 
         -   name: "Apply Code Style"
             shell: bash
@@ -38,3 +42,10 @@ runs:
                 GH_REPO: ${{ inputs.repository }}
                 GH_BRANCH: ${{ inputs.branch }}
             run: ${{github.action_path}}/entrypoint.sh
+
+        -   name: Save Composer Cache
+            uses: actions/cache/save@v4
+            id: saveComposerCache
+            with:
+                path: ~/.composer/cache
+                key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
