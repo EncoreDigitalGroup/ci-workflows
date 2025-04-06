@@ -26,11 +26,28 @@ jobs:
             -   uses: shivammathur/setup-php@v2
                 with:
                     php-version: ${{ inputs.phpVersion }}
+
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ inputs.branch }}
+
+            -   name: Restore Composer Cache
+                uses: actions/cache/restore@v4
+                id: restoreComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
             -   name: Install Dependencies
                 run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
+
+            -   name: Save Composer Cache
+                uses: actions/cache/save@v4
+                id: saveComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
             -   name: Run PHPStan
                 run: |
                     $GITHUB_WORKSPACE/vendor/bin/phpstan analyse ${{ inputs.path }}
