@@ -93,6 +93,31 @@ func formatTitle(title string) string {
 	formattedIssueName := strings.ReplaceAll(issueName, "-", " ")
 	titleCaser := cases.Title(language.English)
 	formattedIssueName = titleCaser.String(formattedIssueName)
+
+	// Replace exception words with their correct casing
+	exceptions := map[string]string{
+		"Api":          "API",
+		"Db":           "DB",
+		"Html":         "HTML",
+		"Rest":         "REST",
+		"Rockrms":      "RockRMS",
+		"Mpc":          "MPC",
+		"Myportal":     "MyPortal",
+		"Pco":          "PCO",
+		"Php":          "PHP",
+		"Phpstan":      "PHPStan",
+		"Servicepoint": "ServicePoint",
+		"Uri":          "URI",
+		"Webcms":       "WebCMS",
+	}
+	words := strings.Fields(formattedIssueName)
+	for i, word := range words {
+		if val, ok := exceptions[word]; ok {
+			words[i] = val
+		}
+	}
+	formattedIssueName = strings.Join(words, " ")
+
 	return fmt.Sprintf("[%s] %s", issueKey, formattedIssueName)
 }
 
