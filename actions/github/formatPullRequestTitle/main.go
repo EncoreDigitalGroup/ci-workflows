@@ -94,8 +94,7 @@ func formatTitle(title string) string {
 	titleCaser := cases.Title(language.English)
 	formattedIssueName = titleCaser.String(formattedIssueName)
 
-	// Replace exception words with their correct casing
-	exceptions := map[string]string{
+	defaultExceptions := map[string]string{
 		"Api":          "API",
 		"Db":           "DB",
 		"Html":         "HTML",
@@ -110,9 +109,21 @@ func formatTitle(title string) string {
 		"Uri":          "URI",
 		"Webcms":       "WebCMS",
 	}
+
+	if userDefinedExceptions := os.Getenv("CI_FMT_WORDS"); userDefinedExceptions != "" {
+		pairs := strings.Split(userDefinedExceptions, ",")
+		for _, pair := range pairs {
+			kv := strings.SplitN(pair, ":", 2)
+			if len(kv) == 2 {
+				key := strings.TrimSpace(kv[0])
+				value := strings.TrimSpace(kv[1])
+				defaultExceptions[key] = value
+			}
+		}
+	}
 	words := strings.Fields(formattedIssueName)
 	for i, word := range words {
-		if val, ok := exceptions[word]; ok {
+		if val, ok := defaultExceptions[word]; ok {
 			words[i] = val
 		}
 	}

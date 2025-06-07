@@ -16,6 +16,10 @@ inputs:
     token:
         description: 'GitHub token'
         required: true
+    customFormatting:
+        description: "User defined custom formatting rules for specific words."
+        required: false
+        default: ""
     useGo:
         description: 'Use the Go version of the action. Default is false [NOTICE: This option will be removed in the next major version.]'
         required: false
@@ -66,6 +70,7 @@ runs:
                 GH_REPOSITORY: ${{ inputs.repository }}
                 PR_NUMBER: ${{ inputs.pullRequestNumber }}
                 BRANCH_NAME: ${{ inputs.branch }}
+                CI_FMT_WORDS: ${{ inputs.customFormatting }}
 
         -   name: "Set execute permissions [NOTICE: This will be removed in the next major version]"
             if: ${{ !inputs.useGo }}
