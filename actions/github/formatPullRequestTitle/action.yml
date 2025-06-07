@@ -47,6 +47,21 @@ runs:
                 restore-keys: |
                     ${{ runner.os }}-go-modules-
 
+        -   name: Calculate Binary Cache Key
+            if: ${{ inputs.useGo }}
+            id: binary-cache-key
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: echo "key=${{ runner.os }}-go-binary-${{ hashFiles('main.go', '**/*.go') }}" >> $GITHUB_OUTPUT
+
+        -   name: Restore Binary Cache
+            if: ${{ inputs.useGo }}
+            uses: actions/cache@v4
+            id: binary-cache
+            with:
+                path: ${{github.action_path}}/action-binary
+                key: ${{ steps.binary-cache-key.outputs.key }}
+
         -   name: Tidy Go Modules
             if: ${{ inputs.useGo }}
             shell: bash
@@ -60,11 +75,23 @@ runs:
                 path: ~/go/pkg/mod
                 key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
 
+        -   name: Build Binary
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit != 'true' }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: go build -o ${{github.action_path}}/action-binary main.go
+
+        -   name: Set Execute Permissions on Binary
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit == 'true' }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: chmod +x ${{github.action_path}}/action-binary
+
         -   name: "Format Pull Request Title"
             if: ${{ inputs.useGo }}
             shell: bash
             working-directory: ${{github.action_path}}
-            run: go run main.go
+            run: ${{github.action_path}}/action-binary
             env:
                 GH_TOKEN: ${{ inputs.token }}
                 GH_REPOSITORY: ${{ inputs.repository }}
