@@ -28,6 +28,10 @@ inputs:
 runs:
     using: 'composite'
     steps:
+        -   uses: actions/checkout@v4
+            with:
+                repository: ${{github.action_repository}}
+
         -   name: Setup Go
             if: ${{ inputs.useGo }}
             uses: actions/setup-go@v5
@@ -37,22 +41,23 @@ runs:
                 cache: true
                 cache-dependency-path: '${{github.action_path}}/go.sum'
 
+        -   name: Generate Main Hash
+            id: mainHash
+            shell: bash
+            run: echo "hash=$(sha256sum ${{github.action_path}}/main.go | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
+        -   name: Generate Module Hash
+            id: moduleHash
+            shell: bash
+            run: echo "hash=$(sha256sum ${{github.action_path}}/go.sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
         -   name: Restore Go Modules Cache
             if: ${{ inputs.useGo }}
             uses: actions/cache@v4
-            id: go-cache
+            id: goModuleCache
             with:
                 path: ~/go/pkg/mod
-                key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
-                restore-keys: |
-                    ${{ runner.os }}-go-modules-
-
-        -   name: Calculate Binary Cache Key
-            if: ${{ inputs.useGo }}
-            id: binary-cache-key
-            shell: bash
-            working-directory: ${{github.action_path}}
-            run: echo "key=${{ runner.os }}-go-binary-${{ hashFiles('main.go', '**/*.go') }}" >> $GITHUB_OUTPUT
+                key: ${{ runner.os }}-go-modules-${{ steps.moduleHash.outputs.hash }}
 
         -   name: Restore Binary Cache
             if: ${{ inputs.useGo }}
@@ -60,20 +65,13 @@ runs:
             id: binary-cache
             with:
                 path: ${{github.action_path}}/action-binary
-                key: ${{ steps.binary-cache-key.outputs.key }}
+                key: ${{ runner.os }}-go-binary-${{ steps.mainHash.outputs.hash }}
 
         -   name: Tidy Go Modules
             if: ${{ inputs.useGo }}
             shell: bash
             working-directory: ${{github.action_path}}
             run: go mod tidy
-
-        -   name: Save Go Modules Cache
-            if: ${{ inputs.useGo && steps.go-cache.outputs.cache-hit != 'true' }}
-            uses: actions/cache@v4
-            with:
-                path: ~/go/pkg/mod
-                key: ${{ runner.os }}-go-modules-${{ hashFiles('**/go.sum') }}
 
         -   name: Build Binary
             if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit != 'true' }}
