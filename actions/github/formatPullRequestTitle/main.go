@@ -96,6 +96,7 @@ func formatTitle(title string) string {
 
 	defaultExceptions := map[string]string{
 		"Api":          "API",
+		"Css":          "CSS",
 		"Db":           "DB",
 		"Html":         "HTML",
 		"Rest":         "REST",
@@ -106,8 +107,10 @@ func formatTitle(title string) string {
 		"Php":          "PHP",
 		"Phpstan":      "PHPStan",
 		"Servicepoint": "ServicePoint",
+		"Themekit":     "ThemeKit",
 		"Uri":          "URI",
 		"Webcms":       "WebCMS",
+		"Webui":        "WebUI",
 	}
 
 	if userDefinedExceptions := os.Getenv("CI_FMT_WORDS"); userDefinedExceptions != "" {
