@@ -19,10 +19,36 @@ on:
                 type: boolean
                 required: false
                 default: false
+            workspace:
+                type: boolean
+                required: false
+                default: false
 
 jobs:
-    StaticAnalysis:
+    DetectModules:
         runs-on: ubuntu-latest
+        if: ${{ inputs.workspace }}
+        outputs:
+            modules: ${{ steps.setModules.outputs.modules }}
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.branch }}
+
+            -   uses: actions/setup-go@v5
+                with:
+                    go-version: ${{ inputs.goVersion }}
+
+            -   id: setModules
+                run: echo "modules=$(go list -m -json | jq -s '.' | jq -c '[.[].Dir]')" >> $GITHUB_OUTPUT
+
+    WorkspaceStaticAnalysis:
+        needs: DetectModules
+        runs-on: ubuntu-latest
+        if: ${{ inputs.workspace }}
+        strategy:
+            matrix:
+                modules: ${{ fromJSON(needs.DetectModules.outputs.modules) }}
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -33,7 +59,27 @@ jobs:
                 with:
                     go-version: ${{ inputs.goVersion }}
 
-            -   name: Run golangci-lint
+            -   name: "[Workspace] Run golangci-lint on ${{ matrix.modules }}"
+                uses: golangci/golangci-lint-action@v8
+                with:
+                    working-directory: ${{ matrix.modules }}
+                    only-new-issues: ${{ inputs.onlyNew }}
+                    args: --timeout=${{ inputs.timeout }}
+
+    StandardStaticAnalysis:
+        runs-on: ubuntu-latest
+        if: ${{ !inputs.workspace }}
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.branch }}
+
+            -   name: Set up Go
+                uses: actions/setup-go@v5
+                with:
+                    go-version: ${{ inputs.goVersion }}
+
+            -   name: "[Standard] Run golangci-lint"
                 uses: golangci/golangci-lint-action@v8
                 with:
                     only-new-issues: ${{ inputs.onlyNew }}
