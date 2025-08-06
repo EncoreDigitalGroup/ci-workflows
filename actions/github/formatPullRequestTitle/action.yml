@@ -68,7 +68,7 @@ runs:
                 key: ${{ runner.os }}-go-binary-${{ steps.mainHash.outputs.hash }}
 
         -   name: Tidy Go Modules
-            if: ${{ inputs.useGo }}
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit != 'true' }}
             shell: bash
             working-directory: ${{github.action_path}}
             run: go mod tidy
