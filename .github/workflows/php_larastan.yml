@@ -1,23 +1,28 @@
-name: PHP Code Analysis
+name: PHP Static Analysis
 
 on:
     workflow_call:
         inputs:
-            phpVersion:
-                type: string
-                description: 'PHP Version'
-                required: false
-                default: '8.3'
-            path:
-                type: string
-                description: 'Path to analyze'
-                required: false
-                default: 'app/ app_modules/'
             branch:
                 type: string
                 description: 'The branch to analize'
                 required: false
                 default: 'main'
+            path:
+                type: string
+                description: 'Path to analyze'
+                required: false
+                default: 'app/ app_modules/'
+            phpVersion:
+                type: string
+                description: 'PHP Version'
+                required: false
+                default: '8.2'
+            directory:
+                type: string
+                description: 'Directory path relative to GITHUB_WORKSPACE'
+                required: false
+                default: ${{ github.workspace }}
 
 jobs:
     StaticAnalysis:
@@ -31,23 +36,42 @@ jobs:
                 with:
                     ref: ${{ inputs.branch }}
 
-            -   name: Restore Composer Cache
-                uses: actions/cache/restore@v4
-                id: restoreComposerCache
+            -   name: Determine Working Directory
+                id: workingDirectory
+                shell: bash
+                run: |
+                    if [ "${{ github.workspace }}" == "${{ inputs.directory }}" ]; then
+                        echo "Using workspace root directory"
+                        echo "directory=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
+                    else
+                      echo "Using subdirectory within workspace"
+                      echo "directory=$GITHUB_WORKSPACE/${{ inputs.directory }}" >> $GITHUB_OUTPUT
+                    fi
+                    echo "Working directory: $GITHUB_WORKSPACE/${{ inputs.directory }}"
+
+            -   name: Get Composer Cache Directory
+                id: composerCache
+                shell: bash
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    echo "cacheDirectory=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+            -   name: Cache Composer Dependencies
+                uses: actions/cache@v4
                 with:
-                    path: ~/.composer/cache
-                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+                    path: |
+                        ${{ steps.composerCache.outputs.cacheDirectory }}
+                        ${{steps.workingDirectory.outputs.directory}}/vendor
+                    key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
 
             -   name: Install Dependencies
-                run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
-
-            -   name: Save Composer Cache
-                uses: actions/cache/save@v4
-                id: saveComposerCache
-                with:
-                    path: ~/.composer/cache
-                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    composer install --no-ansi --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
 
             -   name: Run PHPStan
                 run: |
-                    $GITHUB_WORKSPACE/vendor/bin/phpstan analyse ${{ inputs.path }}
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    ${{steps.workingDirectory.outputs.directory}}/vendor/bin/phpstan analyse ${{ inputs.path }}

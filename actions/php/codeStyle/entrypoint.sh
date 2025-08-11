@@ -4,11 +4,25 @@ run_action() {
     echo "Starting Code Style Enforcement"
     echo "DEBUG: Repository - $GH_REPO"
     echo "DEBUG: Branch - $GH_BRANCH"
+    echo "DEBUG: Directory - $GH_DIRECTORY"
+
+    # Check if GH_DIRECTORY is different from GITHUB_WORKSPACE
+    if [ "$GITHUB_WORKSPACE" != "$GH_DIRECTORY" ]; then
+        echo "Directory is different from workspace, changing to $GH_DIRECTORY"
+        GH_DIRECTORY="$GITHUB_WORKSPACE/$GH_DIRECTORY"
+        # Ensure directory exists
+        if [ ! -d "$GH_DIRECTORY" ]; then
+            echo "ERROR: Directory $GH_DIRECTORY does not exist"
+            exit 1
+        fi
+        cd "$GH_DIRECTORY"
+    fi
 
     git config --global user.name "EncoreBot"
     git config --global user.email "ghbot@encoredigitalgroup.com"
 
     composer install --no-ansi --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
+    rm -f "$GH_DIRECTORY"/auth.json
 
     rector_run
     duster_run
@@ -18,7 +32,8 @@ run_action() {
 rector_run() {
     echo "Running Rector"
 
-    "$GITHUB_WORKSPACE"/vendor/bin/rector process
+    echo "GH_DIRECTORY: $GH_DIRECTORY"
+    "$GH_DIRECTORY"/vendor/bin/rector process
 
     rector_auto_commit_changes
 }
@@ -78,7 +93,8 @@ rector_commit_blame_file() {
 duster_run() {
     echo "Running Duster"
 
-    "$GITHUB_WORKSPACE"/vendor/bin/duster fix
+    echo "GH_DIRECTORY: $GH_DIRECTORY"
+    "$GH_DIRECTORY"/vendor/bin/duster fix
 
     duster_auto_commit_changes
 }

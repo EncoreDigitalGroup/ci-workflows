@@ -11,6 +11,11 @@ inputs:
         type: string
         required: false
         default: "8.3"
+    directory:
+        type: string
+        description: 'Directory path relative to GITHUB_WORKSPACE'
+        required: false
+        default: ${{ github.workspace }}
 runs:
     using: 'composite'
     steps:
@@ -24,28 +29,52 @@ runs:
                 repository: "${{ inputs.repository }}"
                 ref: "${{ inputs.branch }}"
 
-        -   name: Restore Composer Cache
-            uses: actions/cache/restore@v4
-            id: restoreComposerCache
-            with:
-                path: ~/.composer/cache
-                key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-
         -   name: Set execute permissions
             shell: bash
             run: chmod +x ${{github.action_path}}/entrypoint.sh
 
+        -   name: Determine Working Directory
+            id: workingDirectory
+            shell: bash
+            run: |
+                if [ "${{ github.workspace }}" == "${{ inputs.directory }}" ]; then
+                  echo "Using workspace root directory"
+                  echo "directory=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
+                else
+                  echo "Using subdirectory within workspace"
+                  echo "directory=$GITHUB_WORKSPACE/${{ inputs.directory }}" >> $GITHUB_OUTPUT
+                fi
+                echo "Working directory: $(echo ${{ steps.workingDirectory.outputs.directory || '$GITHUB_WORKSPACE' }})"
+
+        -   name: Get Composer Cache Directory
+            id: composerCacheDirectory
+            shell: bash
+            run: echo "directory=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+        -   name: Cache Composer Dependencies
+            id: composerCache
+            uses: actions/cache@v4
+            with:
+                path: |
+                    ${{ steps.composerCacheDirectory.outputs.directory }}
+                    ${{steps.workingDirectory.outputs.directory}}/vendor
+                key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
+                restore-keys: |
+                    ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
 
         -   name: "Apply Code Style"
             shell: bash
             env:
                 GH_REPO: ${{ inputs.repository }}
                 GH_BRANCH: ${{ inputs.branch }}
+                GH_DIRECTORY: ${{ inputs.directory }}
             run: ${{github.action_path}}/entrypoint.sh
 
-        -   name: Save Composer Cache
+        -   name: Force Cache Composer Dependencies
+            if: steps.composerCache.outputs.cache-hit != 'true'
             uses: actions/cache/save@v4
-            id: saveComposerCache
             with:
-                path: ~/.composer/cache
-                key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+                path: |
+                    ${{ steps.composerCache.outputs.directory }}
+                    ${{steps.workingDirectory.outputs.directory}}/vendor
+                key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
