@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/EncoreDigitalGroup/ci-workflows/actions/github/formatPullRequestTitle/pkg"
 	"github.com/EncoreDigitalGroup/golib/logger"
 	"github.com/google/go-github/v70/github"
 	"golang.org/x/oauth2"
@@ -19,6 +20,9 @@ const envGHToken = "GH_TOKEN"
 const envGHRepository = "GH_REPOSITORY"
 const envPRNumber = "PR_NUMBER"
 const envBranchName = "BRANCH_NAME"
+const envEnableJira = "ENABLE_JIRA"
+const envJiraURL = "JIRA_URL"
+const envJiraToken = "JIRA_TOKEN"
 
 // Retrieve environment variables
 var githubToken = os.Getenv(envGHToken)
@@ -89,50 +93,73 @@ func formatTitle(title string) string {
 		return pullRequestTitle
 	}
 
-	// Replace hyphens with spaces and capitalize each word
-	formattedIssueName := strings.ReplaceAll(issueName, "-", " ")
-	titleCaser := cases.Title(language.English)
-	formattedIssueName = titleCaser.String(formattedIssueName)
+	var jiraConfiguration pkg.JiraConfiguration
+	envJiraEnabled := os.Getenv(envEnableJira)
 
-	defaultExceptions := map[string]string{
-		"Api":          "API",
-		"Css":          "CSS",
-		"Db":           "DB",
-		"Html":         "HTML",
-		"Rest":         "REST",
-		"Rockrms":      "RockRMS",
-		"Mpc":          "MPC",
-		"Myportal":     "MyPortal",
-		"Pco":          "PCO",
-		"Php":          "PHP",
-		"Phpstan":      "PHPStan",
-		"Servicepoint": "ServicePoint",
-		"Themekit":     "ThemeKit",
-		"Uri":          "URI",
-		"Webcms":       "WebCMS",
-		"Webui":        "WebUI",
+	jiraEnabled := false
+	if envJiraEnabled == "true" {
+		jiraEnabled = true
 	}
 
-	if userDefinedExceptions := os.Getenv("CI_FMT_WORDS"); userDefinedExceptions != "" {
-		pairs := strings.Split(userDefinedExceptions, ",")
-		for _, pair := range pairs {
-			kv := strings.SplitN(pair, ":", 2)
-			if len(kv) == 2 {
-				key := strings.TrimSpace(kv[0])
-				value := strings.TrimSpace(kv[1])
-				defaultExceptions[key] = value
+	jiraConfiguration.Enable = jiraEnabled
+	jiraConfiguration.IssueKey = issueKey
+	jiraConfiguration.URL = os.Getenv(envJiraURL)
+	jiraConfiguration.Token = os.Getenv(envJiraToken)
+
+	jiraInformation := pkg.GetJiraInformation(jiraConfiguration)
+
+	var finalTitle string
+	if jiraInformation.HasJiraInfo && jiraInformation.Title != "" {
+		finalTitle = jiraInformation.Title
+	} else {
+		// Replace hyphens with spaces and capitalize each word
+		formattedIssueName := strings.ReplaceAll(issueName, "-", " ")
+		titleCaser := cases.Title(language.English)
+		formattedIssueName = titleCaser.String(formattedIssueName)
+
+		defaultExceptions := map[string]string{
+			"Api":          "API",
+			"Css":          "CSS",
+			"Db":           "DB",
+			"Html":         "HTML",
+			"Rest":         "REST",
+			"Rockrms":      "RockRMS",
+			"Mpc":          "MPC",
+			"Myportal":     "MyPortal",
+			"Pco":          "PCO",
+			"Php":          "PHP",
+			"Phpstan":      "PHPStan",
+			"Servicepoint": "ServicePoint",
+			"Themekit":     "ThemeKit",
+			"Uri":          "URI",
+			"Webcms":       "WebCMS",
+			"Webui":        "WebUI",
+		}
+
+		if userDefinedExceptions := os.Getenv("CI_FMT_WORDS"); userDefinedExceptions != "" {
+			pairs := strings.Split(userDefinedExceptions, ",")
+			for _, pair := range pairs {
+				kv := strings.SplitN(pair, ":", 2)
+				if len(kv) == 2 {
+					key := strings.TrimSpace(kv[0])
+					value := strings.TrimSpace(kv[1])
+					defaultExceptions[key] = value
+				}
 			}
 		}
-	}
-	words := strings.Fields(formattedIssueName)
-	for i, word := range words {
-		if val, ok := defaultExceptions[word]; ok {
-			words[i] = val
+		words := strings.Fields(formattedIssueName)
+		for i, word := range words {
+			if val, ok := defaultExceptions[word]; ok {
+				words[i] = val
+			}
 		}
+		finalTitle = strings.Join(words, " ")
 	}
-	formattedIssueName = strings.Join(words, " ")
 
-	return fmt.Sprintf("[%s] %s", issueKey, formattedIssueName)
+	if jiraInformation.HasJiraInfo && jiraInformation.ParentPrefix != "" {
+		return fmt.Sprintf("%s[%s] %s", jiraInformation.ParentPrefix, issueKey, finalTitle)
+	}
+	return fmt.Sprintf("[%s] %s", issueKey, finalTitle)
 }
 
 func updatePullRequestTitle(repoOwner string, repoName string, prNumber int, prTitle string) {
