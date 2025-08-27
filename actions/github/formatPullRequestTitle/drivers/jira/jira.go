@@ -1,29 +1,71 @@
-package pkg
+package jira
 
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
+	branchname "github.com/EncoreDigitalGroup/ci-workflows/actions/github/formatPullRequestTitle/drivers/branch_name"
+	"github.com/EncoreDigitalGroup/ci-workflows/actions/github/formatPullRequestTitle/support/github"
 	"github.com/EncoreDigitalGroup/golib/logger"
 	"github.com/ctreminiom/go-atlassian/jira/v3"
 )
 
-type JiraConfiguration struct {
+type Configuration struct {
 	Enable   bool
 	URL      string
 	Token    string
 	IssueKey string
 }
 
-type JiraInfo struct {
+type Information struct {
 	ParentPrefix string
 	Title        string
 	HasJiraInfo  bool
 }
 
-func GetJiraInformation(config JiraConfiguration) JiraInfo {
-	return getJiraInfo(config)
+func Format(gh github.GitHub) {
+	branchName, err := gh.GetBranchName()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	envUrl := os.Getenv("JIRA_URL")
+	if envUrl == "" {
+		logger.Error("JIRA_URL is not set")
+		os.Exit(1)
+	}
+
+	envToken := os.Getenv("JIRA_TOKEN")
+	if envToken == "" {
+		logger.Error("JIRA_TOKEN is not set")
+		os.Exit(1)
+	}
+
+	issueKey, err := branchname.GetIssueKeyFromBranchName(branchName)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	config := Configuration{
+		Enable:   true,
+		URL:      envUrl,
+		Token:    envToken,
+		IssueKey: issueKey,
+	}
+
+	jira := getJiraInfo(config)
+
+	newPRTitle := gh.ApplyFormatting(issueKey, jira.Title)
+
+	if jira.ParentPrefix != "" {
+		newPRTitle = fmt.Sprintf("[%s]%s", jira.ParentPrefix, newPRTitle)
+	}
+
+	gh.UpdatePRTitle(newPRTitle)
 }
 
 func createJiraClient(jiraURL, jiraToken string) (*v3.Client, error) {
@@ -67,29 +109,29 @@ func getParentIssuePrefix(client *v3.Client, issueKey string) (string, error) {
 	return fmt.Sprintf("[%s]", issue.Fields.Parent.Key), nil
 }
 
-func getJiraInfo(config JiraConfiguration) JiraInfo {
+func getJiraInfo(config Configuration) Information {
 	if config.Enable {
-		return JiraInfo{HasJiraInfo: false}
+		return Information{HasJiraInfo: false}
 	}
 
 	if config.URL == "" || config.Token == "" {
 		logger.Error("JIRA_URL and JIRA_TOKEN must be set when ENABLE_JIRA is true")
-		return JiraInfo{HasJiraInfo: false}
+		return Information{HasJiraInfo: false}
 	}
 
 	client, err := createJiraClient(config.URL, config.Token)
 	if err != nil {
 		logger.Errorf("Failed to create Jira client: %v", err)
-		return JiraInfo{HasJiraInfo: false}
+		return Information{HasJiraInfo: false}
 	}
 
-	result := JiraInfo{HasJiraInfo: true}
+	result := Information{HasJiraInfo: true}
 
 	// Get current issue title
 	title, err := getCurrentIssueInfo(client, config.IssueKey)
 	if err != nil {
 		logger.Errorf("Failed to get current issue info: %v", err)
-		return JiraInfo{HasJiraInfo: false}
+		return Information{HasJiraInfo: false}
 	}
 	result.Title = title
 

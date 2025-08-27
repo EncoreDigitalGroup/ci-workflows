@@ -25,6 +25,16 @@ inputs:
         required: false
         default: false
         type: boolean
+    enableExperiments:
+        description: 'Enabled experimental features'
+        required: false
+        default: false
+        type: boolean
+    strategy:
+        description: 'Which formatting strategy should be used'
+        required: false
+        default: 'branch-name'
+        type: string
 runs:
     using: 'composite'
     steps:
@@ -95,7 +105,9 @@ runs:
                 GH_REPOSITORY: ${{ inputs.repository }}
                 PR_NUMBER: ${{ inputs.pullRequestNumber }}
                 BRANCH_NAME: ${{ inputs.branch }}
+                ENABLE_EXPERIMENTS: ${{ inputs.enableExperiments }}
                 CI_FMT_WORDS: ${{ inputs.customFormatting }}
+                CI_FMT_STRATEGY: $${{ inputs.strategy }}
 
         -   name: "Set execute permissions [NOTICE: This will be removed in the next major version]"
             if: ${{ !inputs.useGo }}
