@@ -1,4 +1,4 @@
-name: PestUnitTests
+name: Pest Tests
 on:
     workflow_call:
         inputs:
