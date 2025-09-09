@@ -27,11 +27,20 @@ on:
                 description: 'Run Pest in Parallel'
                 required: false
                 default: false
+            useCodeCov:
+                type: boolean
+                description: 'Use Sentry CodeCov'
+                required: false
+                default: false
+        secrets:
+            codeCovToken:
+                description: 'Sentry CodeCov Auth Token'
+                required: false
 
 jobs:
-    RunPest:
+    Test:
         runs-on: ubuntu-latest
-
+        if: ${{ !inputs.useCodeCov }}
         steps:
             -   name: Checkout
                 uses: actions/checkout@v4
@@ -77,3 +86,44 @@ jobs:
             -   name: Run Parallel Pest Tests (without Coverage)
                 if: ${{ !inputs.enforceCoverage && inputs.runParallel }}
                 run: ./vendor/bin/pest
+
+    TestWithCodeCov:
+        runs-on: ubuntu-latest
+        if: ${{ inputs.useCodeCov }}
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.branch }}
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ inputs.phpVersion }}
+                    tools: composer:v2
+                    coverage: xdebug
+
+            -   name: Restore Composer Cache
+                uses: actions/cache/restore@v4
+                id: restoreComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+            -   name: Install Dependencies
+                run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+            -   name: Save Composer Cache
+                uses: actions/cache/save@v4
+                id: saveComposerCache
+                with:
+                    path: ~/.composer/cache
+                    key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+
+            -   name: Run Test with CodeCov
+                run: ./vendor/bin/pest --coverage-clover coverage.xml
+
+            -   name: Upload coverage to Codecov
+                uses: codecov/codecov-action@v5
+                env:
+                    CODECOV_TOKEN: ${{ secrets.codeCovToken }}
