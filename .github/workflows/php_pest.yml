@@ -32,6 +32,11 @@ on:
                 description: 'Use Sentry CodeCov'
                 required: false
                 default: false
+            codeCovSlug:
+                type: string
+                description: 'Sentry CodeCov Slug'
+                required: false
+                default: ''
         secrets:
             codeCovToken:
                 description: 'Sentry CodeCov Auth Token'
@@ -125,5 +130,6 @@ jobs:
 
             -   name: Upload coverage to Codecov
                 uses: codecov/codecov-action@v5
-                env:
-                    CODECOV_TOKEN: ${{ secrets.codeCovToken }}
+                with:
+                    token: ${{ secrets.codeCovToken }}
+                    slug: ${{ inputs.codeCovSlug }}
