@@ -1,0 +1,9 @@
+{
+    "rootKey1": {
+        "subKey": "value"
+    },
+    "rootKey2": {
+        "subKey1": "value",
+        "subKey2": "value"
+    }
+}
