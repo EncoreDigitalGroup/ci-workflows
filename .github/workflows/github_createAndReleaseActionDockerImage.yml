@@ -1,0 +1,47 @@
+name: Create and Release Action Docker Image
+
+on:
+    workflow_call:
+        inputs:
+            actionPath:
+                description: 'Path to the action directory containing Dockerfile'
+                required: true
+                type: string
+            imageName:
+                description: 'Name of the Docker image (without registry prefix)'
+                required: true
+                type: string
+            registryPrefix:
+                description: 'Container registry prefix'
+                required: false
+                type: string
+                default: 'ghcr.io/encoredigitalgroup'
+        secrets:
+            token:
+                description: 'GitHub token for authentication'
+                required: true
+
+jobs:
+    BuildAndPushDockerImage:
+        name: Build and Push Docker Image
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Log in to GitHub Container Registry
+                run: echo ${{ secrets.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            -   name: Build and Push Docker Image
+                run: |
+                    cd ${{ inputs.actionPath }}
+                    docker build -t ${{ inputs.registryPrefix }}/${{ inputs.imageName }}:latest .
+                    docker tag ${{ inputs.registryPrefix }}/${{ inputs.imageName }}:latest ${{ inputs.registryPrefix }}/${{ inputs.imageName }}:${{ github.ref_name }}
+                    docker push ${{ inputs.registryPrefix }}/${{ inputs.imageName }}:latest
+                    docker push ${{ inputs.registryPrefix }}/${{ inputs.imageName }}:${{ github.ref_name }}
+
+            -   name: Output Image Details
+                run: |
+                    echo "Docker image built and pushed successfully:"
+                    echo "Image: ${{ inputs.registryPrefix }}/${{ inputs.imageName }}"
+                    echo "Tags: latest, ${{ github.ref_name }}"

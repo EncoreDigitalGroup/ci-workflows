@@ -1,0 +1,46 @@
+name: Pull Request
+
+on:
+    pull_request:
+        paths:
+            - 'actions/**/Dockerfile'
+            - 'actions/**/main.go'
+            - 'actions/**/go.mod'
+            - 'actions/**/go.sum'
+            - 'actions/**/action.yml'
+
+jobs:
+    FindActionDockerfiles:
+        name: Find Action Dockerfiles
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.find-dockerfiles.outputs.matrix }}
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Find Dockerfiles in actions
+                id: find-dockerfiles
+                run: |
+                    dockerfiles=$(find actions -name "Dockerfile" -type f -exec dirname {} \; | jq -R -s -c 'split("\n")[:-1]')
+                    echo "matrix={\"actionPath\":$dockerfiles}" >> $GITHUB_OUTPUT
+                    echo "Found action paths with Dockerfiles: $dockerfiles"
+
+    ValidateDockerBuilds:
+        name: Validate Docker Build
+        runs-on: ubuntu-latest
+        needs: FindActionDockerfiles
+        if: needs.FindActionDockerfiles.outputs.matrix != '{"actionPath":[]}'
+        strategy:
+            matrix: ${{ fromJson(needs.FindActionDockerfiles.outputs.matrix) }}
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+
+            -   name: Build Docker Image (No Push)
+                run: |
+                    cd "${{ matrix.actionPath }}"
+                    action_name=$(basename "${{ matrix.actionPath }}" | tr '[:upper:]' '[:lower:]')
+                    echo "Building Docker image for action: $action_name"
+                    docker build -t test-$action_name:pr-${{ github.event.pull_request.number }} .
+                    echo "✅ Docker build successful for $action_name"

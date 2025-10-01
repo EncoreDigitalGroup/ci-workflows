@@ -13,6 +13,15 @@ permissions:
     contents: write
 
 jobs:
+    BuildCreateReleaseImage:
+        name: Build createRelease Action Image
+        uses: ./.github/workflows/github_createAndReleaseActionDockerImage.yml
+        with:
+            actionPath: 'actions/github/createRelease'
+            imageName: 'gh-action-create-github-release'
+        secrets:
+            token: ${{ secrets.GITHUB_TOKEN }}
+
     CreateRelease:
         name: Create Release
         uses: ./.github/workflows/github_createRelease.yml

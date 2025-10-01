@@ -27,6 +27,12 @@ jobs:
         name: CreateRelease
         runs-on: ubuntu-latest
         steps:
+            -   name: Deprecation Warning
+                run: |
+                    echo "::warning::This workflow (github_createRelease.yml) is deprecated. Please use the actions/github/createRelease action instead."
+                    echo "::warning::Migration guide: Replace 'uses: ./.github/workflows/github_createRelease.yml' with 'uses: ./actions/github/createRelease'"
+                    echo "::warning::The new action provides better performance, more features, and includes Dependabot filtering options."
+
             -   name: Create Release
                 id: createRelease
                 uses: ncipollo/release-action@v1

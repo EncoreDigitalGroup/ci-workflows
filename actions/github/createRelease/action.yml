@@ -1,0 +1,33 @@
+name: 'Create Release'
+description: 'Creates a GitHub Release'
+inputs:
+    token:
+        description: 'GitHub token'
+        required: true
+    preRelease:
+        description: 'Pre-release'
+        required: false
+        default: 'false'
+    generateReleaseNotes:
+        description: 'Generate release notes'
+        required: false
+        default: 'true'
+    isDraft:
+        description: 'Is draft'
+        required: false
+        default: 'false'
+    includeDependabot:
+        description: 'Include Dependabot PRs in release notes'
+        required: false
+        default: 'false'
+runs:
+    using: 'docker'
+    image: 'docker://ghcr.io/encoredigitalgroup/gh-action-create-github-release:latest'
+    env:
+        GH_TOKEN: ${{ secrets.token }}
+        GH_REPOSITORY: ${{ github.repository }}
+        TAG_NAME: ${{ github.ref_name }}
+        PRE_RELEASE: ${{ inputs.preRelease }}
+        GENERATE_RELEASE_NOTES: ${{ inputs.generateReleaseNotes }}
+        IS_DRAFT: ${{ inputs.isDraft }}
+        INCLUDE_DEPENDABOT: ${{ inputs.includeDependabot }}
