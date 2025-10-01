@@ -20,10 +20,22 @@ FROM alpine:latest
 # Install ca-certificates for HTTPS requests
 RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# Create a non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+# Set working directory
+WORKDIR /app
 
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
+
+# Set ownership and permissions
+RUN chown appuser:appgroup /app/main && \
+    chmod +x /app/main
+
+# Switch to non-root user
+USER appuser
 
 # Run the binary
 ENTRYPOINT ["./main"]
