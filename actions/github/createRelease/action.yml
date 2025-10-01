@@ -4,6 +4,12 @@ inputs:
     token:
         description: 'GitHub token'
         required: true
+    repository:
+        description: 'GitHub repository'
+        required: true
+    tagName:
+        description: 'Tag name for the release'
+        required: true
     preRelease:
         description: 'Pre-release'
         required: false
@@ -24,9 +30,9 @@ runs:
     using: 'docker'
     image: 'docker://ghcr.io/encoredigitalgroup/gh-action-create-github-release:latest'
     env:
-        GH_TOKEN: ${{ secrets.token }}
-        GH_REPOSITORY: ${{ github.repository }}
-        TAG_NAME: ${{ github.ref_name }}
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPOSITORY: ${{ inputs.repository }}
+        TAG_NAME: ${{ inputs.tagName }}
         PRE_RELEASE: ${{ inputs.preRelease }}
         GENERATE_RELEASE_NOTES: ${{ inputs.generateReleaseNotes }}
         IS_DRAFT: ${{ inputs.isDraft }}
