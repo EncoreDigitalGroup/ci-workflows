@@ -14,12 +14,19 @@ permissions:
     packages: write
 
 jobs:
-    BuildCreateReleaseImage:
-        name: Build createRelease Action Image
+    BuildActionImages:
+        name: Build Action Images
+        strategy:
+            matrix:
+                include:
+                    -   actionPath: 'actions/github/createRelease'
+                        imageName: 'gh-action-create-github-release'
+                    -   actionPath: 'actions/github/jsonDiffAlert'
+                        imageName: 'gh-action-json-diff-alert'
         uses: ./.github/workflows/github_createAndReleaseActionDockerImage.yml
         with:
-            actionPath: 'actions/github/createRelease'
-            imageName: 'gh-action-create-github-release'
+            actionPath: ${{ matrix.actionPath }}
+            imageName: ${{ matrix.imageName }}
         secrets:
             token: ${{ secrets.GITHUB_TOKEN }}
 
