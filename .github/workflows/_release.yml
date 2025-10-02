@@ -23,7 +23,7 @@ jobs:
                         imageName: 'gh-action-create-github-release'
                     -   actionPath: 'actions/github/jsonDiffAlert'
                         imageName: 'gh-action-json-diff-alert'
-        uses: ./.github/workflows/github_createAndReleaseActionDockerImage.yml
+        uses: ./.github/workflows/_github_createAndReleaseActionDockerImage.yml
         with:
             actionPath: ${{ matrix.actionPath }}
             imageName: ${{ matrix.imageName }}
@@ -32,12 +32,16 @@ jobs:
 
     CreateRelease:
         name: Create Release
-        uses: ./.github/workflows/github_createRelease.yml
-        with:
-            generateReleaseNotes: true
-            isDraft: false
-        secrets:
-            token: ${{ secrets.GITHUB_TOKEN }}
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Create Release
+                uses: EncoreDigitalGroup/ci-workflows/actions/github/createRelease@main
+                with:
+                    generateReleaseNotes: true
+                    isDraft: false
+                    repository: ${{ github.repository }}
+                    tagName: ${{ github.ref_name }}
+                    token: ${{ secrets.GITHUB_TOKEN }}
 
     PrepareTags:
         name: PrepareTags
