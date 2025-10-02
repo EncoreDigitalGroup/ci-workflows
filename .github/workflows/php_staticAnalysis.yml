@@ -2,6 +2,9 @@ name: PHP Static Analysis
 
 on:
     workflow_call:
+        secrets:
+            laravelEnvDecryptionKey:
+                required: false
         inputs:
             branch:
                 type: string
@@ -12,12 +15,17 @@ on:
                 type: string
                 description: 'Path to analyze'
                 required: false
-                default: 'app/ app_modules/'
+                default: 'app/'
             phpVersion:
                 type: string
                 description: 'PHP Version'
                 required: false
-                default: '8.2'
+                default: '8.3'
+            useLaravelEnvDecryptionKey:
+                type: boolean
+                description: 'Should the Laravel environment decryption key be used?'
+                required: false
+                default: false
             directory:
                 type: string
                 description: 'Directory path relative to GITHUB_WORKSPACE'
@@ -70,6 +78,13 @@ jobs:
                 run: |
                     cd ${{steps.workingDirectory.outputs.directory}}
                     composer install --no-ansi --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
+
+            -   name: Decrypt Test Environment Variables
+                if: ${{ inputs.useLaravelEnvDecryptionKey }}
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    php artisan env:decrypt --env=testing --key=${{secrets.laravelEnvDecryptionKey}}
+                    mv ${{steps.workingDirectory.outputs.directory}}/.env.testing ${{steps.workingDirectory.outputs.directory}}/.env
 
             -   name: Run PHPStan
                 run: |

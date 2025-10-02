@@ -1,0 +1,115 @@
+name: PestUnitTests
+on:
+    workflow_call:
+        secrets:
+            laravelEnvDecryptionKey:
+                required: false
+            codeCovToken:
+                description: 'Sentry CodeCov Auth Token'
+                required: false
+        inputs:
+            branch:
+                type: string
+                description: 'The branch to test'
+                required: false
+                default: 'main'
+            phpVersion:
+                type: string
+                description: 'PHP Version'
+                required: false
+                default: '8.3'
+            useLaravelEnvDecryptionKey:
+                type: boolean
+                description: 'Should the Laravel environment decryption key be used?'
+                required: false
+                default: false
+            directory:
+                type: string
+                description: 'Directory path relative to GITHUB_WORKSPACE'
+                required: false
+                default: ${{ github.workspace }}
+            useCodeCov:
+                type: boolean
+                description: 'Use Sentry CodeCov'
+                required: false
+                default: false
+            codeCovSlug:
+                type: string
+                description: 'Sentry CodeCov Slug'
+                required: false
+                default: ''
+
+jobs:
+    Test:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v4
+                with:
+                    ref: ${{ inputs.branch }}
+
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ inputs.phpVersion }}
+                    tools: composer:v2
+                    coverage: xdebug
+
+            -   name: Determine Working Directory
+                id: workingDirectory
+                shell: bash
+                run: |
+                    if [ "${{ github.workspace }}" == "${{ inputs.directory }}" ]; then
+                      echo "Using workspace root directory"
+                      echo "directory=$GITHUB_WORKSPACE" >> $GITHUB_OUTPUT
+                    else
+                      echo "Using subdirectory within workspace"
+                      echo "directory=$GITHUB_WORKSPACE/${{ inputs.directory }}" >> $GITHUB_OUTPUT
+                    fi
+                    echo "Working directory: $(echo $GITHUB_WORKSPACE/${{ inputs.directory }})"
+
+            -   name: Get Composer Cache Directory
+                id: composerCache
+                shell: bash
+                run: echo "directory=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+            -   name: Cache Composer Dependencies
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ${{ steps.composerCache.outputs.directory }}
+                        ${{steps.workingDirectory.outputs.directory}}/vendor
+                    key: ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
+                    restore-keys: |
+                        ${{ runner.os }}-composer-${{ hashFiles(format('{0}/composer.lock', steps.workingDirectory.outputs.directory)) }}
+
+            -   name: Install Dependencies
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    composer install --no-ansi --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
+
+            -   name: Decrypt Test Environment Variables
+                if: ${{ inputs.useLaravelEnvDecryptionKey }}
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    php artisan env:decrypt --env=testing --key=${{secrets.laravelEnvDecryptionKey}}
+                    mv ${{steps.workingDirectory.outputs.directory}}/.env.testing ${{steps.workingDirectory.outputs.directory}}/.env
+
+            -   name: Run Tests
+                run: |
+                    cd ${{steps.workingDirectory.outputs.directory}}
+                    composer run test
+
+            -   name: Upload coverage to CodeCov
+                if: ${{ inputs.useCodeCov }}
+                uses: codecov/codecov-action@v5
+                with:
+                    token: ${{ secrets.codeCovToken }}
+                    slug: ${{ inputs.codeCovSlug }}
+
+            -   name: Upload test results to Codecov
+                if: ${{ inputs.useCodeCov }}
+                uses: codecov/test-results-action@v1
+                with:
+                    token: ${{ secrets.codeCovToken }}
+                    slug: ${{ inputs.codeCovSlug }}
