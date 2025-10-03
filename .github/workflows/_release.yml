@@ -32,6 +32,7 @@ jobs:
 
     CreateRelease:
         name: Create Release
+        needs: BuildActionImages
         runs-on: ubuntu-latest
         steps:
             -   name: Create Release

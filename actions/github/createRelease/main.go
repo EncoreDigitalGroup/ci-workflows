@@ -97,7 +97,9 @@ func generateCustomReleaseNotes(ctx context.Context, client *github.Client, owne
     latestRelease, _, err := client.Repositories.GetLatestRelease(ctx, owner, repo)
     var sinceTime *time.Time
     if err == nil {
-        sinceTime = latestRelease.CreatedAt.GetTime()
+        releaseTime := latestRelease.CreatedAt.GetTime().Add(time.Second)
+        adjustedTime := releaseTime.Add(time.Second)
+        sinceTime = &adjustedTime
     }
 
     // Get merged PRs since the last release
@@ -121,9 +123,9 @@ func generateCustomReleaseNotes(ctx context.Context, client *github.Client, owne
 
         // Add PR to release notes
         if pr.User != nil {
-            releaseNotes.WriteString(fmt.Sprintf("* [#%d] %s by @%s\n", *pr.Number, *pr.Title, *pr.User.Login))
+            releaseNotes.WriteString(fmt.Sprintf("* %s by @%s in #%d\n", *pr.Title, *pr.User.Login, *pr.Number))
         } else {
-            releaseNotes.WriteString(fmt.Sprintf("* [#%d] %s\n", *pr.Number, *pr.Title))
+            releaseNotes.WriteString(fmt.Sprintf("* %s in #%d \n", *pr.Title, *pr.Number))
         }
     }
 

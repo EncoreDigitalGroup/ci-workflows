@@ -23,7 +23,7 @@ on:
 
 jobs:
     BuildAndPushDockerImage:
-        name: Build and Push Docker Image
+        name: Build and Push Docker Image (${{inputs.imageName}})
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
