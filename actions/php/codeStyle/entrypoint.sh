@@ -28,12 +28,28 @@ run_action() {
     duster_run
 }
 
+
 #region rector
 rector_run() {
     echo "Running Rector"
 
     echo "GH_DIRECTORY: $GH_DIRECTORY"
-    "$GH_DIRECTORY"/vendor/bin/rector process
+
+    if [ "$GH_ONLY_DIFF" = "true" ]; then
+        # Get changed PHP files and run rector only on them
+        changed_files=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD | grep '\.php$' || true)
+
+        if [ -n "$changed_files" ]; then
+            echo "Running Rector on changed files"
+            "$GH_DIRECTORY"/vendor/bin/rector process "$changed_files"
+        else
+            echo "No PHP files changed, skipping Rector"
+        fi
+    else
+        # Run rector on all files (original behavior)
+        echo "Running Rector on all files"
+        "$GH_DIRECTORY"/vendor/bin/rector process
+    fi
 
     rector_auto_commit_changes
 }
@@ -94,7 +110,16 @@ duster_run() {
     echo "Running Duster"
 
     echo "GH_DIRECTORY: $GH_DIRECTORY"
-    "$GH_DIRECTORY"/vendor/bin/duster fix
+
+    if [ "$GH_ONLY_DIFF" = "true" ]; then
+        # Run duster only on changed files
+        echo "Running Duster on changed files only"
+        "$GH_DIRECTORY"/vendor/bin/duster fix --diff=main
+    else
+        # Run duster on all files (original behavior)
+        echo "Running Duster on all files"
+        "$GH_DIRECTORY"/vendor/bin/duster fix
+    fi
 
     duster_auto_commit_changes
 }

@@ -16,6 +16,11 @@ inputs:
         description: 'Directory path relative to GITHUB_WORKSPACE'
         required: false
         default: ${{ github.workspace }}
+    onlyDiff:
+        type: boolean
+        description: 'Run rector and duster only on changed files in PR'
+        required: false
+        default: true
 runs:
     using: 'composite'
     steps:
@@ -68,6 +73,7 @@ runs:
                 GH_REPO: ${{ inputs.repository }}
                 GH_BRANCH: ${{ inputs.branch }}
                 GH_DIRECTORY: ${{ inputs.directory }}
+                GH_ONLY_DIFF: ${{ inputs.onlyDiff }}
             run: ${{github.action_path}}/entrypoint.sh
 
         -   name: Force Cache Composer Dependencies
