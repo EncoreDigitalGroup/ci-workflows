@@ -20,7 +20,7 @@ inputs:
         type: boolean
         description: 'Run rector and duster only on changed files in PR'
         required: false
-        default: true
+        default: false
 runs:
     using: 'composite'
     steps:
