@@ -80,7 +80,7 @@ func Format(gh github.GitHub) {
     }
 
     if jiraLabelSyncEnabled() {
-        gh.EnsureLabelExists(jiraLabelSyncName(), "Indicates that Jira synchronization has been completed for this PR", "0e8a16")
+        gh.EnsureLabelExists(jiraLabelSyncName(), "Indicates that Jira synchronization has been completed for this PR", "0052cc")
         gh.AddLabelToPR(jiraLabelSyncName())
     }
 }
