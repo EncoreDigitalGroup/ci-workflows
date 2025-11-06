@@ -1,0 +1,125 @@
+name: 'Format Pull Request Title'
+description: 'Formats the pull request title based on the branch name'
+inputs:
+    repository:
+        description: 'The repository name'
+        required: true
+        type: string
+    pullRequestNumber:
+        description: 'The pull request number'
+        required: true
+        type: string
+    branch:
+        description: 'The branch name'
+        required: true
+        type: string
+    token:
+        description: 'GitHub token'
+        required: true
+    customFormatting:
+        description: "User defined custom formatting rules for specific words."
+        required: false
+        default: ""
+    useGo:
+        description: 'Use the Go version of the action. Default is false [NOTICE: This option will be removed in the next major version.]'
+        required: false
+        default: false
+        type: boolean
+    enableExperiments:
+        description: 'Enabled experimental features'
+        required: false
+        default: false
+        type: boolean
+    strategy:
+        description: 'Which formatting strategy should be used'
+        required: false
+        default: 'branch-name'
+        type: string
+runs:
+    using: 'composite'
+    steps:
+        -   uses: actions/checkout@v4
+            with:
+                repository: ${{github.action_repository}}
+
+        -   name: Setup Go
+            if: ${{ inputs.useGo }}
+            uses: actions/setup-go@v5
+            with:
+                go-version: '>=1.24.1'
+                go-version-file: '${{github.action_path}}/go.mod'
+                cache: true
+                cache-dependency-path: '${{github.action_path}}/go.sum'
+
+        -   name: Generate Main Hash
+            id: mainHash
+            shell: bash
+            run: echo "hash=$(sha256sum ${{github.action_path}}/main.go | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
+        -   name: Generate Module Hash
+            id: moduleHash
+            shell: bash
+            run: echo "hash=$(sha256sum ${{github.action_path}}/go.sum | cut -d ' ' -f 1)" >> $GITHUB_OUTPUT
+
+        -   name: Restore Go Modules Cache
+            if: ${{ inputs.useGo }}
+            uses: actions/cache@v4
+            id: goModuleCache
+            with:
+                path: ~/go/pkg/mod
+                key: ${{ runner.os }}-go-modules-${{ steps.moduleHash.outputs.hash }}
+
+        -   name: Restore Binary Cache
+            if: ${{ inputs.useGo }}
+            uses: actions/cache@v4
+            id: binary-cache
+            with:
+                path: ${{github.action_path}}/action-binary
+                key: ${{ runner.os }}-go-binary-${{ steps.mainHash.outputs.hash }}
+
+        -   name: Tidy Go Modules
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit != 'true' }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: go mod tidy
+
+        -   name: Build Binary
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit != 'true' }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: go build -o ${{github.action_path}}/action-binary main.go
+
+        -   name: Set Execute Permissions on Binary
+            if: ${{ inputs.useGo && steps.binary-cache.outputs.cache-hit == 'true' }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: chmod +x ${{github.action_path}}/action-binary
+
+        -   name: "Format Pull Request Title"
+            if: ${{ inputs.useGo }}
+            shell: bash
+            working-directory: ${{github.action_path}}
+            run: ${{github.action_path}}/action-binary
+            env:
+                GH_TOKEN: ${{ inputs.token }}
+                GH_REPOSITORY: ${{ inputs.repository }}
+                PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                BRANCH_NAME: ${{ inputs.branch }}
+                ENABLE_EXPERIMENTS: ${{ inputs.enableExperiments }}
+                CI_FMT_WORDS: ${{ inputs.customFormatting }}
+                CI_FMT_STRATEGY: $${{ inputs.strategy }}
+
+        -   name: "Set execute permissions [NOTICE: This will be removed in the next major version]"
+            if: ${{ !inputs.useGo }}
+            shell: bash
+            run: chmod +x ${{github.action_path}}/entrypoint.sh
+
+        -   name: "Format Pull Request Title (Legacy) [NOTICE: This will be removed in the next major version]"
+            if: ${{ !inputs.useGo }}
+            shell: bash
+            run: ${{github.action_path}}/entrypoint.sh
+            env:
+                GH_TOKEN: ${{ inputs.token }}
+                GH_REPOSITORY: ${{ inputs.repository }}
+                PR_NUMBER: ${{ inputs.pullRequestNumber }}
+                BRANCH_NAME: ${{ inputs.branch }}
