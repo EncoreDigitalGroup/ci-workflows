@@ -24,12 +24,13 @@ type Configuration struct {
 type Information struct {
     ParentPrefix string
     Title        string
+    Description  string
     HasJiraInfo  bool
 }
 
 func Format(gh github.GitHub) {
-    if gh.HasLabel("jira-sync-complete") {
-        logger.Info("PR already has 'jira-sync-complete' label, skipping Jira sync")
+    if jiraLabelSyncEnabled() && gh.HasLabel(jiraLabelSyncName()) {
+        logger.Info("PR already has '" + jiraLabelSyncName() + "' label, skipping Jira sync")
         return
     }
 
@@ -39,15 +40,15 @@ func Format(gh github.GitHub) {
         os.Exit(1)
     }
 
-    envUrl := os.Getenv("JIRA_URL")
+    envUrl := os.Getenv("OPT_JIRA_URL")
     if envUrl == "" {
-        logger.Error("JIRA_URL is not set")
+        logger.Error("OPT_JIRA_URL is not set")
         os.Exit(1)
     }
 
-    envToken := os.Getenv("JIRA_TOKEN")
+    envToken := os.Getenv("OPT_JIRA_TOKEN")
     if envToken == "" {
-        logger.Error("JIRA_TOKEN is not set")
+        logger.Error("OPT_JIRA_TOKEN is not set")
         os.Exit(1)
     }
 
@@ -73,10 +74,12 @@ func Format(gh github.GitHub) {
     }
 
     gh.UpdatePRTitle(newPRTitle)
+    gh.UpdatePRDescription(jira.Description)
 
-    // Ensure the jira-sync-complete label exists and add it to the PR
-    gh.EnsureLabelExists("jira-sync-complete", "Indicates that Jira synchronization has been completed for this PR", "0e8a16")
-    gh.AddLabelToPR("jira-sync-complete")
+    if jiraLabelSyncEnabled() {
+        gh.EnsureLabelExists(jiraLabelSyncName(), "Indicates that Jira synchronization has been completed for this PR", "0e8a16")
+        gh.AddLabelToPR(jiraLabelSyncName())
+    }
 }
 
 func createJiraClient(jiraURL, jiraToken string) (*v3.Client, error) {
@@ -121,12 +124,12 @@ func getParentIssuePrefix(client *v3.Client, issueKey string) (string, error) {
 }
 
 func getJiraInfo(config Configuration) Information {
-    if config.Enable {
+    if !config.Enable {
         return Information{HasJiraInfo: false}
     }
 
     if config.URL == "" || config.Token == "" {
-        logger.Error("JIRA_URL and JIRA_TOKEN must be set when ENABLE_JIRA is true")
+        logger.Error("OPT_JIRA_URL and OPT_JIRA_TOKEN must be set when OPT_ENABLE_JIRA is true")
         return Information{HasJiraInfo: false}
     }
 
@@ -138,22 +141,28 @@ func getJiraInfo(config Configuration) Information {
 
     result := Information{HasJiraInfo: true}
 
-    // Get current issue jiraIssue
     jiraIssue, err := getCurrentIssueInfo(client, config.IssueKey)
     if err != nil {
         logger.Errorf("Failed to get current issue info: %v", err)
         return Information{HasJiraInfo: false}
     }
     result.Title = jiraIssue.Fields.Summary
-
-    // Get parent issue prefix if applicable
-    parentPrefix, err := getParentIssuePrefix(client, config.IssueKey)
-    if err != nil {
-        logger.Errorf("Failed to get parent issue info: %v", err)
-        // Don't fail completely, just continue without parent prefix
-    } else {
-        result.ParentPrefix = parentPrefix
-    }
+    result.ParentPrefix = jiraIssue.Fields.Parent.Key
+    result.Description = jiraIssue.Fields.Description.Text
 
     return result
+}
+
+func jiraLabelSyncEnabled() bool {
+    return strings.ToLower(os.Getenv("OPT_ENABLE_JIRA_SYNC_LABEL")) == "true"
+}
+
+func jiraLabelSyncName() string {
+    label := os.Getenv("OPT_JIRA_SYNC_LABEL")
+
+    if label == "" {
+        return "jira-sync-complete"
+    }
+
+    return label
 }

@@ -18,8 +18,7 @@ var gh github.GitHub
 const envGHRepository = "GH_REPOSITORY"
 const envPRNumber = "PR_NUMBER"
 const envBranchName = "BRANCH_NAME"
-const envEnableExperiments = "ENABLE_EXPERIMENTS"
-const envStrategy = "CI_FMT_STRATEGY"
+const envStrategy = "OPT_FMT_STRATEGY"
 
 // Retrieve environment variables
 var strategy = os.Getenv(envStrategy)

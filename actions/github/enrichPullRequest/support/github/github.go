@@ -161,7 +161,7 @@ func (gh *GitHubClient) ApplyFormatting(issueKey string, issueName string) strin
         "Webui":        "WebUI",
     }
 
-    if userDefinedExceptions := os.Getenv("CI_FMT_WORDS"); userDefinedExceptions != "" {
+    if userDefinedExceptions := os.Getenv("OPT_FMT_WORDS"); userDefinedExceptions != "" {
         pairs := strings.Split(userDefinedExceptions, ",")
         for _, pair := range pairs {
             kv := strings.SplitN(pair, ":", 2)
@@ -195,14 +195,12 @@ func (gh *GitHubClient) HasLabel(labelName string) bool {
 }
 
 func (gh *GitHubClient) EnsureLabelExists(labelName string, description string, color string) {
-    // Check if label already exists in the repository
     _, _, err := gh.client.Issues.GetLabel(context.Background(), gh.repositoryOwner, gh.repositoryName, labelName)
     if err == nil {
         // Label already exists
         return
     }
 
-    // Create the label if it doesn't exist
     label := &github.Label{
         Name:        &labelName,
         Description: &description,
