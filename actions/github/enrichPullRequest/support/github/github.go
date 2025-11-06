@@ -25,6 +25,7 @@ type GitHub interface {
     UpdatePRTitle(newPRTitle string)
     UpdatePRDescription(newPRDescription string)
     ApplyFormatting(issueKey string, issueName string) string
+    HasLabel(labelName string) bool
 }
 
 // GitHubClient implements the GitHub interface
@@ -177,4 +178,16 @@ func (gh *GitHubClient) ApplyFormatting(issueKey string, issueName string) strin
     }
 
     return fmt.Sprintf("[%s] %s", issueKey, formattedIssueName)
+}
+
+func (gh *GitHubClient) HasLabel(labelName string) bool {
+    pullRequestInformation := gh.GetPRInformation()
+
+    for _, label := range pullRequestInformation.Labels {
+        if label.Name != nil && *label.Name == labelName {
+            return true
+        }
+    }
+
+    return false
 }

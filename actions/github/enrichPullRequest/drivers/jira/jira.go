@@ -28,6 +28,11 @@ type Information struct {
 }
 
 func Format(gh github.GitHub) {
+    if gh.HasLabel("jira-sync-complete") {
+        logger.Info("PR already has 'jira-sync-complete' label, skipping Jira sync")
+        return
+    }
+
     branchName, err := gh.GetBranchName()
     if err != nil {
         logger.Error(err.Error())
