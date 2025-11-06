@@ -73,8 +73,11 @@ func Format(gh github.GitHub) {
         newPRTitle = fmt.Sprintf("[%s]%s", jira.ParentPrefix, newPRTitle)
     }
 
-    gh.UpdatePRTitle(newPRTitle)
-    gh.UpdatePRDescription(jira.Description)
+    if jiraDescriptionSyncEnabled() {
+        gh.UpdatePR(newPRTitle, jira.Description)
+    } else {
+        gh.UpdatePRTitle(newPRTitle)
+    }
 
     if jiraLabelSyncEnabled() {
         gh.EnsureLabelExists(jiraLabelSyncName(), "Indicates that Jira synchronization has been completed for this PR", "0e8a16")
@@ -147,7 +150,16 @@ func getJiraInfo(config Configuration) Information {
         return Information{HasJiraInfo: false}
     }
     result.Title = jiraIssue.Fields.Summary
-    result.ParentPrefix = jiraIssue.Fields.Parent.Key
+
+    // Get parent issue prefix if applicable
+    parentPrefix, err := getParentIssuePrefix(client, config.IssueKey)
+    if err != nil {
+        logger.Errorf("Failed to get parent issue info: %v", err)
+        // Don't fail completely, just continue without parent prefix
+    } else {
+        result.ParentPrefix = parentPrefix
+    }
+
     result.Description = jiraIssue.Fields.Description.Text
 
     return result
@@ -155,6 +167,10 @@ func getJiraInfo(config Configuration) Information {
 
 func jiraLabelSyncEnabled() bool {
     return strings.ToLower(os.Getenv("OPT_ENABLE_JIRA_SYNC_LABEL")) == "true"
+}
+
+func jiraDescriptionSyncEnabled() bool {
+    return strings.ToLower(os.Getenv("OPT_ENABLE_JIRA_SYNC_DESCRIPTION")) == "true"
 }
 
 func jiraLabelSyncName() string {
