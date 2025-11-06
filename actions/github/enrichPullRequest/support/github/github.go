@@ -26,6 +26,8 @@ type GitHub interface {
     UpdatePRDescription(newPRDescription string)
     ApplyFormatting(issueKey string, issueName string) string
     HasLabel(labelName string) bool
+    AddLabelToPR(labelName string)
+    EnsureLabelExists(labelName string, description string, color string)
 }
 
 // GitHubClient implements the GitHub interface
@@ -190,4 +192,38 @@ func (gh *GitHubClient) HasLabel(labelName string) bool {
     }
 
     return false
+}
+
+func (gh *GitHubClient) EnsureLabelExists(labelName string, description string, color string) {
+    // Check if label already exists in the repository
+    _, _, err := gh.client.Issues.GetLabel(context.Background(), gh.repositoryOwner, gh.repositoryName, labelName)
+    if err == nil {
+        // Label already exists
+        return
+    }
+
+    // Create the label if it doesn't exist
+    label := &github.Label{
+        Name:        &labelName,
+        Description: &description,
+        Color:       &color,
+    }
+
+    _, _, err = gh.client.Issues.CreateLabel(context.Background(), gh.repositoryOwner, gh.repositoryName, label)
+    if err != nil {
+        logger.Errorf("Failed to create label '%s': %v", labelName, err)
+    } else {
+        logger.Infof("Created label '%s' in repository", labelName)
+    }
+}
+
+func (gh *GitHubClient) AddLabelToPR(labelName string) {
+    labels := []string{labelName}
+
+    _, _, err := gh.client.Issues.AddLabelsToIssue(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, labels)
+    if err != nil {
+        logger.Errorf("Failed to add label '%s' to PR: %v", labelName, err)
+    } else {
+        logger.Infof("Added label '%s' to PR #%d", labelName, gh.pullRequestNumber)
+    }
 }

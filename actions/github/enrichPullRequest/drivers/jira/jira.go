@@ -73,6 +73,10 @@ func Format(gh github.GitHub) {
     }
 
     gh.UpdatePRTitle(newPRTitle)
+
+    // Ensure the jira-sync-complete label exists and add it to the PR
+    gh.EnsureLabelExists("jira-sync-complete", "Indicates that Jira synchronization has been completed for this PR", "0e8a16")
+    gh.AddLabelToPR("jira-sync-complete")
 }
 
 func createJiraClient(jiraURL, jiraToken string) (*v3.Client, error) {
