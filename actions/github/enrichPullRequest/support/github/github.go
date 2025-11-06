@@ -127,9 +127,33 @@ func (gh *GitHubClient) UpdatePRTitle(newPRTitle string) {
 func (gh *GitHubClient) UpdatePRDescription(newPRDescription string) {
     pullRequestInformation := gh.GetPRInformation()
 
-    pullRequestInformation.Body = &newPRDescription
+    const jiraStartMarker = "<!-- JIRA_SYNC_START -->"
+    const jiraEndMarker = "<!-- JIRA_SYNC_END -->"
+    var finalDescription string
+
+    if pullRequestInformation.Body != nil && *pullRequestInformation.Body != "" {
+        existingBody := *pullRequestInformation.Body
+
+        // Check if Jira markers already exist
+        startIndex := strings.Index(existingBody, jiraStartMarker)
+        endIndex := strings.Index(existingBody, jiraEndMarker)
+
+        if startIndex != -1 && endIndex != -1 && endIndex > startIndex {
+            // Both markers exist - replace content between them
+            beforeJira := existingBody[:startIndex]
+            afterJira := existingBody[endIndex+len(jiraEndMarker):]
+            finalDescription = strings.TrimSpace(beforeJira) + "\n\n" + jiraStartMarker + "\n" + newPRDescription + "\n" + jiraEndMarker + strings.TrimSpace(afterJira)
+        } else {
+            // Markers don't exist or are malformed - append with markers
+            finalDescription = existingBody + "\n\n" + jiraStartMarker + "\n" + newPRDescription + "\n" + jiraEndMarker
+        }
+    } else {
+        // No existing description - add markers and Jira description
+        finalDescription = jiraStartMarker + "\n" + newPRDescription + "\n" + jiraEndMarker
+    }
+
     _, _, err := gh.client.PullRequests.Edit(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, &github.PullRequest{
-        Body: &newPRDescription,
+        Body: &finalDescription,
     })
     if err != nil {
         logger.Errorf("Failed to update pull request prDescription: %v", err)
