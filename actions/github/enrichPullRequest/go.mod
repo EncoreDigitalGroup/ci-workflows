@@ -1,4 +1,4 @@
-module github.com/EncoreDigitalGroup/ci-workflows/actions/github/formatPullRequestTitle
+module github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest
 
 go 1.24.1
 
