@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy source code
-COPY main.go ./
+COPY . .
 
 # Build the binary
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
