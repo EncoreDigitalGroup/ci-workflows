@@ -8,7 +8,7 @@ import (
     "github.com/EncoreDigitalGroup/golib/logger"
 
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers"
-    "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/branch_name"
+    branchname "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/branch_name"
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/jira"
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/support/github"
 )
