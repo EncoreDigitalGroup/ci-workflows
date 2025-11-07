@@ -209,12 +209,13 @@ func (gh *GitHubClient) ApplyFormatting(issueKey string, issueName string) strin
             }
         }
     }
-    words := strings.Fields(issueName)
+    words := strings.Fields(formattedIssueName)
     for i, word := range words {
         if val, ok := defaultExceptions[word]; ok {
             words[i] = val
         }
     }
+    formattedIssueName = strings.Join(words, " ")
 
     return fmt.Sprintf("[%s] %s", issueKey, formattedIssueName)
 }
