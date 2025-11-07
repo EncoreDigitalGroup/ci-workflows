@@ -21,18 +21,48 @@ inputs:
         required: false
         default: ""
     strategy:
+        type: string
         description: 'Which formatting strategy should be used'
         required: false
         default: 'branch-name'
+    jiraURL:
         type: string
+        description: 'URL to your jira instance'
+        required: false
+        default: ''
+    jiraToken:
+        type: string
+        description: 'Jira auth token'
+        required: false
+        default: ''
+    jiraEnableSyncLabel:
+        type: boolean
+        description: 'Use a sync label'
+        required: false
+        default: true
+    jiraEnableSyncDescription:
+        type: boolean
+        description: 'Sync Jira description to PR description'
+        required: false
+        default: true
+    jiraSyncLabelName:
+        type: string
+        description: 'Name of the sync label'
+        required: false
+        default: 'jira-sync-complete'
 runs:
     using: 'docker'
-    image: 'docker://ghcr.io/encoredigitalgroup/gh-action-create-github-release:latest'
+    image: 'docker://ghcr.io/encoredigitalgroup/gh-action-enrich-pull-request:latest'
     env:
         GH_TOKEN: ${{ inputs.token }}
         GH_REPOSITORY: ${{ inputs.repository }}
         PR_NUMBER: ${{ inputs.pullRequestNumber }}
         BRANCH_NAME: ${{ inputs.branch }}
         ENABLE_EXPERIMENTS: ${{ inputs.enableExperiments }}
-        CI_FMT_WORDS: ${{ inputs.customFormatting }}
-        CI_FMT_STRATEGY: ${{ inputs.strategy }}
+        OPT_FMT_WORDS: ${{ inputs.customFormatting }}
+        OPT_FMT_STRATEGY: ${{ inputs.strategy }}
+        OPT_JIRA_URL: ${{ inputs.jiraURL }}
+        OPT_JIRA_TOKEN: ${{ inputs.jiraToken }}
+        OPT_ENABLE_JIRA_SYNC_LABEL: ${{ inputs.jiraEnableSyncLabel }}
+        OPT_JIRA_SYNC_LABEL_NAME: ${{ inputs.jiraSyncLabelName }}
+        OPT_ENABLE_JIRA_SYNC_DESCRIPTION: ${{ inputs.jiraEnableSyncDescription }}

@@ -23,6 +23,8 @@ jobs:
                         imageName: 'gh-action-create-github-release'
                     -   actionPath: 'actions/github/jsonDiffAlert'
                         imageName: 'gh-action-json-diff-alert'
+                    -   actionPath: 'actions/github/enrichPullRequest'
+                        imageName: 'gh-action-enrich-pull-request'
         uses: ./.github/workflows/_github_createAndReleaseActionDockerImage.yml
         with:
             actionPath: ${{ matrix.actionPath }}
