@@ -27,8 +27,6 @@ var prNumberStr = os.Getenv(envPRNumber)
 var branchName = os.Getenv(envBranchName)
 var parts = strings.Split(repo, "/")
 
-var pullRequestTitle = ""
-
 // Main function to execute the program
 func main() {
     checkEnvVars()
