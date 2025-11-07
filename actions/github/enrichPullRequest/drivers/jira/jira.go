@@ -160,7 +160,9 @@ func getJiraInfo(config Configuration) Information {
         result.ParentPrefix = parentPrefix
     }
 
-    result.Description = jiraIssue.Fields.Description.Text
+    if jiraIssue.Fields.Description != nil {
+        result.Description = jiraIssue.Fields.Description.Text
+    }
 
     return result
 }
