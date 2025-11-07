@@ -35,6 +35,7 @@ func main() {
     prNumber, err := strconv.Atoi(prNumberStr)
     if err != nil {
         logger.Errorf(envPRNumber+" is not a valid integer: %v", err)
+        os.Exit(1)
     }
 
     gh = github.New(repoOwner, repoName, prNumber)
