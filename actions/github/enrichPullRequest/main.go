@@ -17,14 +17,12 @@ var gh github.GitHub
 
 const envGHRepository = "GH_REPOSITORY"
 const envPRNumber = "PR_NUMBER"
-const envBranchName = "BRANCH_NAME"
 const envStrategy = "OPT_FMT_STRATEGY"
 
 // Retrieve environment variables
 var strategy = os.Getenv(envStrategy)
 var repo = os.Getenv(envGHRepository)
 var prNumberStr = os.Getenv(envPRNumber)
-var branchName = os.Getenv(envBranchName)
 var parts = strings.Split(repo, "/")
 
 // Main function to execute the program
@@ -54,11 +52,6 @@ func checkEnvVars() {
     isMissingVar := false
     if strategy == "" {
         logger.Error(envStrategy + " environment variable is not set")
-        isMissingVar = true
-    }
-
-    if branchName == "" {
-        logger.Error(envBranchName + " environment variable is not set")
         isMissingVar = true
     }
 
