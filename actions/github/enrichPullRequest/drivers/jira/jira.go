@@ -65,6 +65,11 @@ func Format(gh github.GitHub) {
         os.Exit(1)
     }
 
+    if issueKey == "" {
+        logger.Error("Issue key is empty")
+        return
+    }
+
     config := Configuration{
         Enable:   true,
         URL:      envUrl,
