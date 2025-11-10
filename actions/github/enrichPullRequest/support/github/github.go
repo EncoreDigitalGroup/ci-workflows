@@ -84,6 +84,7 @@ func (gh *GitHubClient) BranchNameMatchesPRTitle(currentPRTitle string) bool {
     pullRequest, _, err := gh.client.PullRequests.Get(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber)
     if err != nil {
         logger.Errorf("Failed to get pullRequest request: %v", err)
+        return false
     }
 
     if currentPRTitle == *pullRequest.Title {
