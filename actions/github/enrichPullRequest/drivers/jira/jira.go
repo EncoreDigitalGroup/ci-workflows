@@ -2,7 +2,9 @@ package jira
 
 import (
     "context"
+    "errors"
     "fmt"
+    "net/http"
     "os"
     "strings"
 
@@ -27,6 +29,16 @@ type Information struct {
     Title        string
     Description  string
     HasJiraInfo  bool
+    AuthFailure  bool
+}
+
+type JiraError struct {
+    IsAuthFailure bool
+    OriginalError error
+}
+
+func (e *JiraError) Error() string {
+    return e.OriginalError.Error()
 }
 
 func Format(gh github.GitHub) {
@@ -80,6 +92,21 @@ func Format(gh github.GitHub) {
 
     jira := getJiraInfo(config)
 
+    if jira.AuthFailure {
+        logger.Errorf("Jira authentication failed")
+
+        comment := "**Jira Authentication Failed**\n\n" +
+            "Unable to authenticate with Jira to fetch issue information. " +
+            "Please verify that the Jira credentials (URL, email, and token) are correctly configured and that the token has not expired.\n\n" +
+            "**Possible solutions:**\n" +
+            "- Check that `OPT_JIRA_URL`, `OPT_JIRA_EMAIL`, and `OPT_JIRA_TOKEN` environment variables are set correctly\n" +
+            "- Verify that the Jira API token is still valid\n" +
+            "- Ensure the Jira user has permission to access the issue: `" + issueKey + "`"
+
+        gh.AddPRComment(comment)
+        return
+    }
+
     newPRTitle := gh.ApplyFormatting(issueKey, jira.Title)
 
     if jira.ParentPrefix != "" {
@@ -109,9 +136,13 @@ func createJiraClient(jiraURL, jiraEmail, jiraToken string) (*v3.Client, error) 
 }
 
 func getCurrentIssueInfo(client *v3.Client, issueKey string) (*models.IssueScheme, error) {
-    issue, _, err := client.Issue.Get(context.Background(), issueKey, nil, nil)
+    issue, response, err := client.Issue.Get(context.Background(), issueKey, nil, nil)
     if err != nil {
-        return nil, fmt.Errorf("failed to fetch Jira issue %s: %v", issueKey, err)
+        isAuthFailure := response != nil && response.StatusCode == http.StatusUnauthorized
+        return nil, &JiraError{
+            IsAuthFailure: isAuthFailure,
+            OriginalError: fmt.Errorf("failed to fetch Jira issue %s: %v", issueKey, err),
+        }
     }
 
     return issue, nil
@@ -160,6 +191,11 @@ func getJiraInfo(config Configuration) Information {
     jiraIssue, err := getCurrentIssueInfo(client, config.IssueKey)
     if err != nil {
         logger.Errorf("Failed to get current issue info: %v", err)
+        var jiraErr *JiraError
+        if errors.As(err, &jiraErr) && jiraErr.IsAuthFailure {
+            return Information{HasJiraInfo: false, AuthFailure: true}
+        }
+
         return Information{HasJiraInfo: false}
     }
     result.Title = jiraIssue.Fields.Summary
