@@ -250,9 +250,10 @@ func (gh *GitHubClient) EnsureLabelExists(labelName string, description string, 
     _, _, err = gh.client.Issues.CreateLabel(context.Background(), gh.repositoryOwner, gh.repositoryName, label)
     if err != nil {
         logger.Errorf("Failed to create label '%s': %v", labelName, err)
-        prComment := "The label `" + labelName + "` does not exist in this repository and we encountered an "
-        prComment = prComment + "error when attempting to create it.\n\n"
-        prComment = prComment + "Please ensure the access token provided has permission to manage labels."
+        prComment := "The label `" + labelName + "` does not exist in this repository and we encountered an " +
+            "error when attempting to create it.\n\n" +
+            "Please ensure the access token provided has permission to manage labels."
+
         gh.AddPRComment(prComment)
 
     } else {
@@ -266,8 +267,8 @@ func (gh *GitHubClient) AddLabelToPR(labelName string) {
     _, _, err := gh.client.Issues.AddLabelsToIssue(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, labels)
     if err != nil {
         logger.Errorf("Failed to add label '%s' to PR: %v", labelName, err)
-        prComment := "We failed to add the `" + labelName + "` label to this PR.\n\n"
-        prComment = prComment + "Please ensure the access token provided has permission to manage labels."
+        prComment := "We failed to add the `" + labelName + "` label to this PR.\n\n" +
+            "Please ensure the access token provided has permission to manage labels."
         gh.AddPRComment(prComment)
     } else {
         logger.Infof("Added label '%s' to PR #%d", labelName, gh.pullRequestNumber)
