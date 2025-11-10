@@ -120,6 +120,7 @@ func (gh *GitHubClient) UpdatePRTitle(newPRTitle string) {
 
     if err != nil {
         logger.Errorf("Failed to update pull request prTitle: %v", err)
+        return
     }
 
     logger.Infof("Updated Pull Request Title to: %s", newPRTitle)
