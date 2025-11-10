@@ -145,7 +145,7 @@ func getJiraInfo(config Configuration) Information {
     }
 
     if config.URL == "" || config.Email == "" || config.Token == "" {
-        logger.Error("OPT_JIRA_URL OPT_JIRA_EMAIL, and OPT_JIRA_TOKEN must be set when configured strategy is 'jira'.")
+        logger.Error("OPT_JIRA_URL, OPT_JIRA_EMAIL, and OPT_JIRA_TOKEN must be set when configured strategy is 'jira'.")
         return Information{HasJiraInfo: false}
     }
 
