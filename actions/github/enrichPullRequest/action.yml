@@ -1,0 +1,74 @@
+name: 'Enrich Pull Request'
+description: "Enrich's the pull request with information from your project management system."
+inputs:
+    repository:
+        description: 'The repository name'
+        required: true
+        type: string
+    pullRequestNumber:
+        description: 'The pull request number'
+        required: true
+        type: string
+    branch:
+        description: 'The branch name'
+        required: true
+        type: string
+    token:
+        description: 'GitHub token'
+        required: true
+    customFormatting:
+        description: "User defined custom formatting rules for specific words."
+        required: false
+        default: ""
+    strategy:
+        type: string
+        description: 'Which formatting strategy should be used'
+        required: false
+        default: 'branch-name'
+    jiraURL:
+        type: string
+        description: 'URL to your jira instance'
+        required: false
+        default: ''
+    jiraEmail:
+        type: string
+        description: 'Jira auth email'
+        required: false
+        default: ''
+    jiraToken:
+        type: string
+        description: 'Jira auth token'
+        required: false
+        default: ''
+    jiraEnableSyncLabel:
+        type: boolean
+        description: 'Use a sync label'
+        required: false
+        default: true
+    jiraEnableSyncDescription:
+        type: boolean
+        description: 'Sync Jira description to PR description'
+        required: false
+        default: true
+    jiraSyncLabelName:
+        type: string
+        description: 'Name of the sync label'
+        required: false
+        default: 'jira-sync-complete'
+runs:
+    using: 'docker'
+    image: 'docker://ghcr.io/encoredigitalgroup/gh-action-enrich-pull-request:latest'
+    env:
+        GH_TOKEN: ${{ inputs.token }}
+        GH_REPOSITORY: ${{ inputs.repository }}
+        PR_NUMBER: ${{ inputs.pullRequestNumber }}
+        BRANCH_NAME: ${{ inputs.branch }}
+        ENABLE_EXPERIMENTS: ${{ inputs.enableExperiments }}
+        OPT_FMT_WORDS: ${{ inputs.customFormatting }}
+        OPT_FMT_STRATEGY: ${{ inputs.strategy }}
+        OPT_JIRA_URL: ${{ inputs.jiraURL }}
+        OPT_JIRA_EMAIL: ${{ inputs.jiraEmail }}
+        OPT_JIRA_TOKEN: ${{ inputs.jiraToken }}
+        OPT_ENABLE_JIRA_SYNC_LABEL: ${{ inputs.jiraEnableSyncLabel }}
+        OPT_JIRA_SYNC_LABEL_NAME: ${{ inputs.jiraSyncLabelName }}
+        OPT_ENABLE_JIRA_SYNC_DESCRIPTION: ${{ inputs.jiraEnableSyncDescription }}
