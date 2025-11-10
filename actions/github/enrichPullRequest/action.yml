@@ -30,6 +30,11 @@ inputs:
         description: 'URL to your jira instance'
         required: false
         default: ''
+    jiraEmail:
+        type: string
+        description: 'Jira auth email'
+        required: false
+        default: ''
     jiraToken:
         type: string
         description: 'Jira auth token'
@@ -62,6 +67,7 @@ runs:
         OPT_FMT_WORDS: ${{ inputs.customFormatting }}
         OPT_FMT_STRATEGY: ${{ inputs.strategy }}
         OPT_JIRA_URL: ${{ inputs.jiraURL }}
+        OPT_JIRA_EMAIL: ${{ inputs.jiraEmail }}
         OPT_JIRA_TOKEN: ${{ inputs.jiraToken }}
         OPT_ENABLE_JIRA_SYNC_LABEL: ${{ inputs.jiraEnableSyncLabel }}
         OPT_JIRA_SYNC_LABEL_NAME: ${{ inputs.jiraSyncLabelName }}
