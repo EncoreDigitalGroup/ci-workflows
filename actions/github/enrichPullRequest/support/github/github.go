@@ -112,7 +112,7 @@ func (gh *GitHubClient) GetPRInformation() *github.PullRequest {
 }
 
 func (gh *GitHubClient) UpdatePRTitle(newPRTitle string) {
-    fmt.Println("Attempting to Update Pull Request Title to:", newPRTitle)
+    logger.Infof("Attempting to Update Pull Request Title to: %s", newPRTitle)
 
     _, _, err := gh.client.PullRequests.Edit(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, &github.PullRequest{
         Title: &newPRTitle,
@@ -160,7 +160,7 @@ func (gh *GitHubClient) UpdatePR(newPRTitle string, newPRDescription string) {
 
     finalDescription := gh.processDescriptionWithMarkers(existingBody, newPRDescription)
 
-    fmt.Println("Attempting to Update Pull Request Title to:", newPRTitle)
+    logger.Infof("Attempting to Update Pull Request Title to: %s", newPRTitle)
 
     _, _, err := gh.client.PullRequests.Edit(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, &github.PullRequest{
         Title: &newPRTitle,
