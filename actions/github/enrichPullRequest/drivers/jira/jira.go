@@ -17,6 +17,7 @@ import (
 type Configuration struct {
     Enable   bool
     URL      string
+    Email    string
     Token    string
     IssueKey string
 }
@@ -46,6 +47,12 @@ func Format(gh github.GitHub) {
         os.Exit(1)
     }
 
+    envEmail := os.Getenv("OPT_JIRA_EMAIL")
+    if envEmail == "" {
+        logger.Error("OPT_JIRA_EMAIL is not set")
+        os.Exit(1)
+    }
+
     envToken := os.Getenv("OPT_JIRA_TOKEN")
     if envToken == "" {
         logger.Error("OPT_JIRA_TOKEN is not set")
@@ -61,6 +68,7 @@ func Format(gh github.GitHub) {
     config := Configuration{
         Enable:   true,
         URL:      envUrl,
+        Email:    envEmail,
         Token:    envToken,
         IssueKey: issueKey,
     }
@@ -85,13 +93,13 @@ func Format(gh github.GitHub) {
     }
 }
 
-func createJiraClient(jiraURL, jiraToken string) (*v3.Client, error) {
+func createJiraClient(jiraURL, jiraEmail, jiraToken string) (*v3.Client, error) {
     client, err := v3.New(nil, jiraURL)
     if err != nil {
         return nil, err
     }
 
-    client.Auth.SetBearerToken(jiraToken)
+    client.Auth.SetBasicAuth(jiraEmail, jiraToken)
     return client, nil
 }
 
@@ -131,12 +139,12 @@ func getJiraInfo(config Configuration) Information {
         return Information{HasJiraInfo: false}
     }
 
-    if config.URL == "" || config.Token == "" {
-        logger.Error("OPT_JIRA_URL and OPT_JIRA_TOKEN must be set when configured strategy is 'jira'.")
+    if config.URL == "" || config.Email == "" || config.Token == "" {
+        logger.Error("OPT_JIRA_URL OPT_JIRA_EMAIL, and OPT_JIRA_TOKEN must be set when configured strategy is 'jira'.")
         return Information{HasJiraInfo: false}
     }
 
-    client, err := createJiraClient(config.URL, config.Token)
+    client, err := createJiraClient(config.URL, config.Email, config.Token)
     if err != nil {
         logger.Errorf("Failed to create Jira client: %v", err)
         return Information{HasJiraInfo: false}
