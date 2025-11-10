@@ -45,6 +45,7 @@ multiple strategies including branch name parsing and Jira integration, providin
 | `strategy`                  | string  | ❌        | `"branch-name"`        | Enrichment strategy: "branch-name" or "jira"           |
 | `customFormatting`          | string  | ❌        | `""`                   | Custom word formatting rules (comma-separated pairs)   |
 | `jiraURL`                   | string  | ❌        | `""`                   | URL to your Jira instance (required for jira strategy) |
+| `jiraEmail`                 | string  | ❌        | `""`                   | Jira authentication email (required for jira strategy) |
 | `jiraToken`                 | string  | ❌        | `""`                   | Jira authentication token (required for jira strategy) |
 | `jiraEnableSyncLabel`       | boolean | ❌        | `true`                 | Create and assign sync completion label                |
 | `jiraEnableSyncDescription` | boolean | ❌        | `true`                 | Sync Jira description to PR description                |
@@ -136,6 +137,7 @@ jobs:
                     token: ${{ secrets.GITHUB_TOKEN }}
                     strategy: "jira"
                     jiraURL: ${{ vars.JIRA_URL }}
+                    jiraEmail: ${{ vars.JIRA_EMAIL }}
                     jiraToken: ${{ secrets.JIRA_TOKEN }}
                     jiraEnableSyncLabel: true
                     jiraEnableSyncDescription: true
@@ -191,6 +193,7 @@ jobs:
                     token: ${{ secrets.GITHUB_TOKEN }}
                     strategy: "jira"
                     jiraURL: ${{ vars.JIRA_URL }}
+                    jiraEmail: ${{ vars.JIRA_EMAIL }}
                     jiraToken: ${{ secrets.JIRA_TOKEN }}
 
     validate:
@@ -243,7 +246,8 @@ TICKET-789-maintenance-task
 
 ```yaml
 # Using organization variables and secrets
-jiraURL: ${{ vars.JIRA_URL }}          # https://yourorg.atlassian.net
+jiraURL: ${{ vars.JIRA_URL }}           # https://yourorg.atlassian.net
+jiraEmail: ${{ vars.JIRA_EMAIL }}       # someone@yourcompany.com
 jiraToken: ${{ secrets.JIRA_TOKEN }}    # Jira API token or PAT
 ```
 
@@ -271,6 +275,7 @@ The GitHub token must have the following permissions:
 ```yaml
 permissions:
     pull-requests: write  # Required for updating PR title/description and labels
+    issues: write         # Required for creating the sync label if it doesn't exist
     contents: read        # Required for accessing repository and branch information
 ```
 
@@ -342,6 +347,7 @@ curl -H "Authorization: Bearer $JIRA_TOKEN" \
 # Ensure proper GitHub permissions
 permissions:
     pull-requests: write
+    issues: write
     contents: read
 ```
 
