@@ -28,6 +28,7 @@ type GitHub interface {
     HasLabel(labelName string) bool
     AddLabelToPR(labelName string)
     EnsureLabelExists(labelName string, description string, color string)
+    AddPRComment(comment string)
 }
 
 // GitHubClient implements the GitHub interface
@@ -248,6 +249,11 @@ func (gh *GitHubClient) EnsureLabelExists(labelName string, description string, 
     _, _, err = gh.client.Issues.CreateLabel(context.Background(), gh.repositoryOwner, gh.repositoryName, label)
     if err != nil {
         logger.Errorf("Failed to create label '%s': %v", labelName, err)
+        prComment := "The label `" + labelName + "` does not exist in this repository and we encountered an "
+        prComment = prComment + "error when attempting to create it.\n\n"
+        prComment = prComment + "Please ensure the access token provided has permission to manage labels."
+        gh.AddPRComment(prComment)
+
     } else {
         logger.Infof("Created label '%s' in repository", labelName)
     }
@@ -259,7 +265,23 @@ func (gh *GitHubClient) AddLabelToPR(labelName string) {
     _, _, err := gh.client.Issues.AddLabelsToIssue(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, labels)
     if err != nil {
         logger.Errorf("Failed to add label '%s' to PR: %v", labelName, err)
+        prComment := "We failed to add the `" + labelName + "` label to this PR.\n\n"
+        prComment = prComment + "Please ensure the access token provided has permission to manage labels."
+        gh.AddPRComment(prComment)
     } else {
         logger.Infof("Added label '%s' to PR #%d", labelName, gh.pullRequestNumber)
+    }
+}
+
+func (gh *GitHubClient) AddPRComment(comment string) {
+    issueComment := &github.IssueComment{
+        Body: &comment,
+    }
+
+    _, _, err := gh.client.Issues.CreateComment(context.Background(), gh.repositoryOwner, gh.repositoryName, gh.pullRequestNumber, issueComment)
+    if err != nil {
+        logger.Errorf("Failed to add comment to PR: %v", err)
+    } else {
+        logger.Infof("Added comment to PR #%d", gh.pullRequestNumber)
     }
 }
