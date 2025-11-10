@@ -131,7 +131,7 @@ func getParentIssuePrefix(client *v3.Client, issueKey string) (string, error) {
         return "", nil
     }
 
-    return fmt.Sprintf("[%s]", issue.Fields.Parent.Key), nil
+    return fmt.Sprintf("%s", issue.Fields.Parent.Key), nil
 }
 
 func getJiraInfo(config Configuration) Information {
