@@ -27,6 +27,13 @@ var parts = strings.Split(repo, "/")
 
 // Main function to execute the program
 func main() {
+    validStrategy := drivers.Validate(strategy)
+
+    if !validStrategy {
+        logger.Errorf("Invalid strategy: %s", strategy)
+        os.Exit(1)
+    }
+
     checkEnvVars()
     repoOwner := parts[0]
     repoName := parts[1]
