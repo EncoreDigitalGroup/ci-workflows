@@ -112,6 +112,11 @@ func Format(gh github.GitHub) {
 		comment := "Failed to get information from Jira.\n\n" +
 			"Please check the GitHub Action logs for specific error information."
 
+		/**
+		  TODO: Add mechanism to prevent the same comment being added multiple times.
+		        Explore fetching the existing comments on the PR and check if our comment
+		        is already present. If so, skip adding this same comment again.
+		*/
 		gh.AddPRComment(comment)
 
 		return
