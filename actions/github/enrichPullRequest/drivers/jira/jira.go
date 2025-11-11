@@ -36,6 +36,7 @@ type JiraError struct {
     IsAuthFailure bool
     OriginalError error
     StatusCode    int
+    Response      *models.ResponseScheme
 }
 
 func (e *JiraError) Error() string {
@@ -164,9 +165,10 @@ func getCurrentIssueInfo(client *v3.Client, issueKey string) (*models.IssueSchem
 
         isAuthFailure := response.StatusCode == http.StatusUnauthorized
         return nil, &JiraError{
-            StatusCode:    response.StatusCode,
             IsAuthFailure: isAuthFailure,
             OriginalError: fmt.Errorf("failed to fetch Jira issue %s: %v", issueKey, err),
+            StatusCode:    response.StatusCode,
+            Response:      response,
         }
     }
 
