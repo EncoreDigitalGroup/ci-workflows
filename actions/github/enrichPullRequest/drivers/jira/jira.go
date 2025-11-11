@@ -92,16 +92,6 @@ func Format(gh github.GitHub) {
 
 	jira := getJiraInfo(config)
 
-	if config.Enable && !jira.HasJiraInfo {
-		logger.Errorf("Failed to get Jira info")
-		comment := "Failed to get information from Jira.\n\n" +
-			"Please check the GitHub Action logs for specific error information."
-
-		gh.AddPRComment(comment)
-
-		return
-	}
-
 	if jira.AuthFailure {
 		logger.Errorf("Jira authentication failed")
 
@@ -114,6 +104,16 @@ func Format(gh github.GitHub) {
 			"- Ensure the Jira user has permission to access the issue: `" + issueKey + "`"
 
 		gh.AddPRComment(comment)
+		return
+	}
+
+	if config.Enable && !jira.HasJiraInfo {
+		logger.Errorf("Failed to get Jira info")
+		comment := "Failed to get information from Jira.\n\n" +
+			"Please check the GitHub Action logs for specific error information."
+
+		gh.AddPRComment(comment)
+
 		return
 	}
 
