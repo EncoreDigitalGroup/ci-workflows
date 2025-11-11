@@ -200,14 +200,20 @@ func getJiraInfo(config Configuration) Information {
 
 	jiraIssue, err := getCurrentIssueInfo(client, config.IssueKey)
 	if err != nil {
-		logger.Errorf("Failed to get current issue info: %v", err)
 		var jiraErr *JiraError
-		if errors.As(err, &jiraErr) && jiraErr.IsAuthFailure {
-			return Information{HasJiraInfo: false, AuthFailure: true}
+		if errors.As(err, &jiraErr) {
+			logger.Errorf("Failed to get Jira issue info: %v", jiraErr.OriginalError.Error())
+			if jiraErr.IsAuthFailure {
+				return Information{HasJiraInfo: false, AuthFailure: true}
+			}
+
+			return Information{HasJiraInfo: false}
 		}
 
+		logger.Errorf("Failed to get Jira issue info: %v", err)
 		return Information{HasJiraInfo: false}
 	}
+
 	result.Title = jiraIssue.Fields.Summary
 
 	// Get parent issue prefix if applicable
