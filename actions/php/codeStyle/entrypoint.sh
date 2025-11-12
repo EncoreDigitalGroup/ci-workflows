@@ -22,12 +22,10 @@ run_action() {
     git config --global user.email "ghbot@encoredigitalgroup.com"
 
     composer install --no-ansi --no-interaction --no-progress --prefer-dist --ignore-platform-reqs
-    rm -f "$GH_DIRECTORY"/auth.json
 
     rector_run
     duster_run
 }
-
 
 #region rector
 rector_run() {
@@ -36,12 +34,20 @@ rector_run() {
     echo "GH_DIRECTORY: $GH_DIRECTORY"
 
     if [ "$GH_ONLY_DIFF" = "true" ]; then
+        # Fetch the pull request's merge commit and main branch
+        pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        git fetch origin +refs/pull/"${pr_number}"/merge
+        git fetch origin main:refs/remotes/origin/main
+
         # Get changed PHP files and run rector only on them
-        changed_files=$(git diff --name-only --diff-filter=ACMR origin/main...HEAD | grep '\.php$' || true)
+        # Use two-dot syntax instead of three-dot to avoid "no merge base" error
+        changed_files=$(git diff --name-only --diff-filter=ACMR origin/main..HEAD | grep '\.php$' || true)
 
         if [ -n "$changed_files" ]; then
             echo "Running Rector on changed files"
-            "$GH_DIRECTORY"/vendor/bin/rector process "$changed_files"
+            # Run rector from workspace root where the file paths are relative to
+            cd "$GITHUB_WORKSPACE"
+            echo "$changed_files" | xargs "$GH_DIRECTORY"/vendor/bin/rector process --config="$GH_DIRECTORY/rector.php"
         else
             echo "No PHP files changed, skipping Rector"
         fi
@@ -112,9 +118,16 @@ duster_run() {
     echo "GH_DIRECTORY: $GH_DIRECTORY"
 
     if [ "$GH_ONLY_DIFF" = "true" ]; then
-        # Run duster only on changed files
-        echo "Running Duster on changed files only"
-        "$GH_DIRECTORY"/vendor/bin/duster fix --diff=main
+        # Get changed files similar to rector approach
+        changed_files=$(git diff --name-only --diff-filter=ACMR origin/main..HEAD || true)
+
+        if [ -n "$changed_files" ]; then
+            echo "Running Duster on changed files"
+            # Convert newline-separated files to space-separated for duster
+            echo "$changed_files" | xargs "$GH_DIRECTORY"/vendor/bin/duster fix
+        else
+            echo "No files changed, skipping Duster"
+        fi
     else
         # Run duster on all files (original behavior)
         echo "Running Duster on all files"
