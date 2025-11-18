@@ -183,9 +183,7 @@ func getTicketInfo(config Configuration) (*APIResponse, error) {
     req.Header.Set("Authorization", "Bearer "+config.AuthToken)
     req.Header.Set("Accept", "application/json")
 
-    client := &http.Client{
-        Timeout: 30 * time.Second,
-    }
+    client := &http.Client{}
 
     resp, err := client.Do(req)
     if err != nil {
