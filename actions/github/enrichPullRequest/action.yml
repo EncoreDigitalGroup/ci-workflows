@@ -55,6 +55,14 @@ inputs:
         description: 'Name of the sync label'
         required: false
         default: 'jira-sync-complete'
+    httpEndpoint:
+        type: string
+        description: 'Endpoint for the action to use'
+        required: false
+    authToken:
+        type: string
+        description: 'Authentication token for the endpoint'
+        required: false
 runs:
     using: 'docker'
     image: 'docker://ghcr.io/encoredigitalgroup/gh-action-enrich-pull-request:latest'
@@ -72,3 +80,5 @@ runs:
         OPT_ENABLE_JIRA_SYNC_LABEL: ${{ inputs.jiraEnableSyncLabel }}
         OPT_JIRA_SYNC_LABEL_NAME: ${{ inputs.jiraSyncLabelName }}
         OPT_ENABLE_JIRA_SYNC_DESCRIPTION: ${{ inputs.jiraEnableSyncDescription }}
+        OPT_HTTP_ENDPOINT: ${{ inputs.httpEndpoint }}
+        OPT_AUTH_TOKEN: ${{ inputs.authToken }}

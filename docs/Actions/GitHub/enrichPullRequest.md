@@ -13,7 +13,7 @@ multiple strategies including branch name parsing and Jira integration, providin
 
 ## Features
 
-- **Multiple Enrichment Strategies**: Support for branch-name and Jira strategies
+- **Multiple Enrichment Strategies**: Support for branch-name, Jira, and general HTTP API strategies
 - **Automatic PR Title Formatting**: Converts branch names and issue keys to readable titles
 - **Jira Integration**: Syncs Jira issue titles and descriptions to pull requests
 - **Custom Formatting Rules**: User-defined formatting preferences
@@ -36,20 +36,22 @@ multiple strategies including branch name parsing and Jira integration, providin
 
 ## Inputs
 
-| Input                       | Type    | Required | Default                | Description                                            |
-|-----------------------------|---------|----------|------------------------|--------------------------------------------------------|
-| `repository`                | string  | ✅        | -                      | GitHub repository in format "owner/repo"               |
-| `pullRequestNumber`         | string  | ✅        | -                      | Pull request number to update                          |
-| `branch`                    | string  | ✅        | -                      | Branch name to parse for enrichment                    |
-| `token`                     | string  | ✅        | -                      | GitHub token with pull request write permissions       |
-| `strategy`                  | string  | ❌        | `"branch-name"`        | Enrichment strategy: "branch-name" or "jira"           |
-| `customFormatting`          | string  | ❌        | `""`                   | Custom word formatting rules (comma-separated pairs)   |
-| `jiraURL`                   | string  | ❌        | `""`                   | URL to your Jira instance (required for jira strategy) |
-| `jiraEmail`                 | string  | ❌        | `""`                   | Jira authentication email (required for jira strategy) |
-| `jiraToken`                 | string  | ❌        | `""`                   | Jira authentication token (required for jira strategy) |
-| `jiraEnableSyncLabel`       | boolean | ❌        | `true`                 | Create and assign sync completion label                |
-| `jiraEnableSyncDescription` | boolean | ❌        | `true`                 | Sync Jira description to PR description                |
-| `jiraSyncLabelName`         | string  | ❌        | `"jira-sync-complete"` | Name of the sync completion label                      |
+| Input                       | Type    | Required | Default                | Description                                                       |
+|-----------------------------|---------|----------|------------------------|-------------------------------------------------------------------|
+| `repository`                | string  | ✅        | -                      | GitHub repository in format "owner/repo"                          |
+| `pullRequestNumber`         | string  | ✅        | -                      | Pull request number to update                                     |
+| `branch`                    | string  | ✅        | -                      | Branch name to parse for enrichment                               |
+| `token`                     | string  | ✅        | -                      | GitHub token with pull request write permissions                  |
+| `strategy`                  | string  | ❌        | `"branch-name"`        | Enrichment strategy: "branch-name", "jira", or "general"          |
+| `customFormatting`          | string  | ❌        | `""`                   | Custom word formatting rules (comma-separated pairs)              |
+| `jiraURL`                   | string  | ❌        | `""`                   | URL to your Jira instance (required for jira strategy)            |
+| `jiraEmail`                 | string  | ❌        | `""`                   | Jira authentication email (required for jira strategy)            |
+| `jiraToken`                 | string  | ❌        | `""`                   | Jira authentication token (required for jira strategy)            |
+| `jiraEnableSyncLabel`       | boolean | ❌        | `true`                 | Create and assign sync completion label                           |
+| `jiraEnableSyncDescription` | boolean | ❌        | `true`                 | Sync Jira description to PR description                           |
+| `jiraSyncLabelName`         | string  | ❌        | `"jira-sync-complete"` | Name of the sync completion label                                 |
+| `httpEndpoint`              | string  | ❌        | `""`                   | HTTP API endpoint URL (required for general strategy)             |
+| `authToken`                 | string  | ❌        | `""`                   | Authentication token for HTTP API (required for general strategy) |
 
 ## Action Implementation
 
@@ -87,6 +89,43 @@ Integrates with Jira to fetch issue information and enrich PRs:
 - Adds parent issue prefixes for subtasks
 - Creates sync completion labels (enabled by default)
 - Prevents duplicate syncing
+
+### General HTTP API Strategy
+
+Integrates with any HTTP API that follows the expected response format:
+
+**Features:**
+
+- Fetches ticket information from any HTTP API endpoint
+- Supports Bearer token authentication
+- Updates PR title from API response
+- Optionally syncs description from API
+- Automatic label creation and assignment
+- Error handling with PR comments for missing tickets
+
+**API Response Format:**
+
+```json
+{
+    "title": "Required: Issue title for PR",
+    "description": "Optional: Issue description",
+    "assignee": "Optional: Assignee username",
+    "labels": [
+        {
+            "title": "Required: Label name",
+            "description": "Optional: Label description",
+            "color": "Optional: Hex color code (without #)"
+        }
+    ]
+}
+```
+
+**API Request:**
+
+- Method: GET
+- URL: `{httpEndpoint}?id={ticket_id}`
+- Headers: `Authorization: Bearer {authToken}`, `Accept: application/json`
+- Timeout: 30 seconds
 
 ## Usage Examples
 
@@ -141,6 +180,32 @@ jobs:
                     jiraToken: ${{ secrets.JIRA_TOKEN }}
                     jiraEnableSyncLabel: true
                     jiraEnableSyncDescription: true
+```
+
+### General HTTP API Integration
+
+```yaml
+name: Enrich PR with Custom API
+on:
+    pull_request:
+        types: [ opened, synchronize ]
+
+jobs:
+    enrich-pr:
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: write
+        steps:
+            -   name: Enrich with Custom API
+                uses: EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest@v3
+                with:
+                    repository: ${{ github.repository }}
+                    pullRequestNumber: ${{ github.event.number }}
+                    branch: ${{ github.head_ref }}
+                    token: ${{ secrets.GITHUB_TOKEN }}
+                    strategy: "general"
+                    httpEndpoint: ${{ vars.TICKET_API_ENDPOINT }}
+                    authToken: ${{ secrets.TICKET_API_TOKEN }}
 ```
 
 ### Custom Formatting Rules
@@ -268,6 +333,56 @@ When `jiraEnableSyncLabel: true`:
 - Label description: "Indicates that Jira synchronization has been completed for this PR"
 - Prevents duplicate syncing on subsequent runs
 
+## General HTTP API Integration Details
+
+### Authentication
+
+```yaml
+# Using organization variables and secrets
+httpEndpoint: ${{ vars.TICKET_API_ENDPOINT }}     # https://api.yourcompany.com/tickets
+authToken: ${{ secrets.TICKET_API_TOKEN }}        # Bearer token for API access
+```
+
+### API Implementation Requirements
+
+**Endpoint Requirements:**
+
+- Must accept GET requests with ticket ID as query parameter: `?id={ticket_id}`
+- Must support Bearer token authentication
+- Must return JSON response with required fields
+- Should respond within 30 seconds (request timeout)
+
+**Response Requirements:**
+
+```json
+{
+    "title": "string (required)",
+    "description": "string (optional)",
+    "assignee": "string (optional)",
+    "labels": [
+        {
+            "title": "string (required)",
+            "description": "string (optional)",
+            "color": "string (optional, hex without #)"
+        }
+    ]
+}
+```
+
+**Error Handling:**
+
+- 404 responses trigger "Ticket Not Found" PR comments
+- Non-200 responses trigger "API Error" PR comments
+- Network/timeout errors trigger generic error comments
+
+### Ticket ID Extraction
+
+The general strategy uses the same branch name parsing as the branch-name strategy:
+
+- Extracts ticket ID using pattern: `[A-Z]+-[0-9]+`
+- Examples: `feature/PROJ-123-description` → `PROJ-123`
+- Calls API with: `GET {endpoint}?id=PROJ-123`
+
 ## Required Permissions
 
 The GitHub token must have the following permissions:
@@ -318,6 +433,13 @@ customFormatting: "comp:Component,svc:Service,lib:Library,util:Utility,cfg:Confi
 - Check Jira token permissions
 - Ensure issue key exists in Jira
 
+**General API Connection Issues**
+
+- Verify API endpoint is accessible and returns proper format
+- Check Bearer token permissions and validity
+- Ensure ticket ID exists in the target system
+- Verify API response follows required JSON structure
+
 **Branch Pattern Mismatch**
 
 - Verify branch name follows supported patterns
@@ -339,6 +461,15 @@ jiraToken: ${{ secrets.JIRA_API_TOKEN }}  # Use API token, not password
 # Verify issue exists and is accessible
 curl -H "Authorization: Bearer $JIRA_TOKEN" \
      "https://yourorg.atlassian.net/rest/api/3/issue/PROJ-123"
+```
+
+**API Connectivity Issues**
+
+```bash
+# Test general API endpoint
+curl -H "Authorization: Bearer $API_TOKEN" \
+     -H "Accept: application/json" \
+     "https://api.yourcompany.com/tickets?id=PROJ-123"
 ```
 
 **Permission Denied**
@@ -366,3 +497,12 @@ permissions:
 2. **API Tokens**: Use Jira API tokens instead of passwords
 3. **Issue Templates**: Maintain consistent issue title formats
 4. **Parent Relationships**: Properly structure issue hierarchies
+
+### General API Integration
+
+1. **API Design**: Follow the required JSON response format consistently
+2. **Authentication**: Use secure Bearer tokens with appropriate scoping
+3. **Error Handling**: Implement proper HTTP status codes (404 for not found)
+4. **Performance**: Ensure API responds within 30 seconds
+5. **Security**: Use environment variables and secrets for sensitive data
+6. **Monitoring**: Log API requests for debugging and monitoring
