@@ -10,6 +10,7 @@ import (
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers"
     branchname "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/branch_name"
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/jira"
+    httpdriver "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/drivers/general"
     "github.com/EncoreDigitalGroup/ci-workflows/actions/github/enrichPullRequest/support/github"
 )
 
@@ -53,6 +54,10 @@ func main() {
 
     if strategy == drivers.Jira {
         jira.Format(gh)
+    }
+
+    if strategy == drivers.General {
+        httpdriver.Format(gh)
     }
 }
 
