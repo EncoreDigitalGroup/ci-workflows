@@ -189,12 +189,11 @@ func getTicketInfo(config Configuration) (*APIResponse, error) {
     if err != nil {
         return nil, fmt.Errorf("failed to make HTTP request: %v", err)
     }
-    defer func(Body io.ReadCloser) {
-        err := Body.Close()
-        if err != nil {
+    defer func() {
+        if err := resp.Body.Close(); err != nil {
             logger.Errorf("Failed to close response body: %v", err)
         }
-    }(resp.Body)
+    }()
 
     body, err := io.ReadAll(resp.Body)
     if err != nil {
