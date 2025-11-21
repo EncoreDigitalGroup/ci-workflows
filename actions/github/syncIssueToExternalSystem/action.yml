@@ -1,0 +1,69 @@
+name: 'Sync Issue to External System'
+description: 'Synchronizes GitHub project issues to external system when they are created'
+inputs:
+    github-token:
+        description: 'GitHub token for API access'
+        required: true
+    issue-number:
+        description: 'GitHub issue number'
+        required: true
+        type: string
+    issue-title:
+        description: 'GitHub issue title'
+        required: true
+        type: string
+    issue-body:
+        description: 'GitHub issue body/description'
+        required: false
+        default: ''
+        type: string
+    issue-url:
+        description: 'GitHub issue URL'
+        required: true
+        type: string
+    repository:
+        description: 'GitHub repository (owner/repo format)'
+        required: true
+        type: string
+    assignees:
+        description: 'Comma-separated list of GitHub issue assignees'
+        required: false
+        default: ''
+        type: string
+    labels:
+        description: 'Comma-separated list of GitHub issue labels'
+        required: false
+        default: ''
+        type: string
+    endpoint:
+        description: 'External System URL (e.g., https://yourcompany.atlassian.net)'
+        required: true
+        type: string
+    email:
+        description: 'User email for authentication'
+        required: true
+        type: string
+    auth-token:
+        description: 'API token for authentication'
+        required: true
+        type: string
+    project-key:
+        description: 'Project key where issues should be created'
+        required: true
+        type: string
+runs:
+    using: 'docker'
+    image: 'Dockerfile'
+    env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        ISSUE_NUMBER: ${{ inputs.issue-number }}
+        ISSUE_TITLE: ${{ inputs.issue-title }}
+        ISSUE_BODY: ${{ inputs.issue-body }}
+        ISSUE_URL: ${{ inputs.issue-url }}
+        REPOSITORY: ${{ inputs.repository }}
+        ASSIGNEES: ${{ inputs.assignees }}
+        LABELS: ${{ inputs.labels }}
+        OPT_ENDPOINT: ${{ inputs.endpoint }}
+        OPT_EMAIL: ${{ inputs.email }}
+        OPT_AUTH_TOKEN: ${{ inputs.auth-token }}
+        OPT_PROJECT_KEY: ${{ inputs.project-key }}
