@@ -279,7 +279,7 @@ Replace manual Laravel Pint commands:
 ./vendor/bin/pint
 
 # After
-# Use this action in GitHub workflows
+# Use this action in github workflows
 ```
 
 ### From Other Code Style Tools

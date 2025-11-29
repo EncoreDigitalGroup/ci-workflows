@@ -24,7 +24,7 @@ comprehensive release management capabilities including pre-release flags, draft
 ## Usage
 
 ```yaml
-- name: Create GitHub Release
+- name: Create github Release
   uses: ./actions/github/createRelease
   with:
     token: ${{ secrets.GITHUB_TOKEN }}

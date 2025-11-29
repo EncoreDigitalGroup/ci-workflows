@@ -192,7 +192,7 @@ jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Create GitHub Release
+      - name: Create github Release
         # Create release steps...
 
   update-docs:

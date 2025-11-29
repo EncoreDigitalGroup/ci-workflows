@@ -344,7 +344,7 @@ curl -H "Authorization: Bearer $JIRA_TOKEN" \
 **Permission Denied**
 
 ```yaml
-# Ensure proper GitHub permissions
+# Ensure proper github permissions
 permissions:
     pull-requests: write
     issues: write

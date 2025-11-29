@@ -25,13 +25,13 @@ and test processes.
 ## Usage
 
 ```yaml
-- name: Check TypeScript File Changes
+- name: Check typescript File Changes
   id: ts-check
   uses: ./actions/ts/gitStatusCheck
   with:
     branch: main
 
-- name: Run TypeScript Build
+- name: Run typescript Build
   if: steps.ts-check.outputs.shouldRun == 'true'
   run: npm run build
 ```
@@ -80,7 +80,7 @@ package-lock.json
 ### React TypeScript Project
 
 ```yaml
-name: React TypeScript CI
+name: React typescript CI
 on:
   pull_request:
     branches: [main]
@@ -93,7 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for TypeScript Changes
+      - name: Check for typescript Changes
         id: check
         uses: ./actions/ts/gitStatusCheck
         with:
@@ -115,7 +115,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: TypeScript Type Check
+      - name: typescript Type Check
         run: npm run type-check
 
       - name: Build
@@ -128,7 +128,7 @@ jobs:
 ### Node.js TypeScript API
 
 ```yaml
-name: Node.js TypeScript API
+name: Node.js typescript API
 on:
   push:
     branches: [main, develop]
@@ -155,7 +155,7 @@ jobs:
         env:
           POSTGRES_PASSWORD: postgres
     steps:
-      - name: Setup TypeScript Environment
+      - name: Setup typescript Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -173,7 +173,7 @@ jobs:
 ### Monorepo TypeScript Project
 
 ```yaml
-name: TypeScript Monorepo
+name: typescript Monorepo
 on:
   pull_request:
 
@@ -185,7 +185,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check TypeScript Changes
+      - name: Check typescript Changes
         id: check
         uses: ./actions/ts/gitStatusCheck
 
@@ -208,7 +208,7 @@ jobs:
 ### TypeScript Library Development
 
 ```yaml
-name: TypeScript Library
+name: typescript Library
 on:
   pull_request:
 
@@ -255,7 +255,7 @@ jobs:
 ### Performance-Optimized Pipeline
 
 ```yaml
-name: Optimized TypeScript Pipeline
+name: Optimized typescript Pipeline
 on:
   pull_request:
 
@@ -267,7 +267,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check TypeScript Changes
+      - name: Check typescript Changes
         id: check
         uses: ./actions/ts/gitStatusCheck
 
@@ -294,7 +294,7 @@ jobs:
 ### Multi-Environment Deployment
 
 ```yaml
-name: TypeScript Deployment Pipeline
+name: typescript Deployment Pipeline
 on:
   push:
     branches: [main, staging, develop]
@@ -416,7 +416,7 @@ jobs:
 ### Dependency Security Scanning
 
 ```yaml
-name: TypeScript Security Audit
+name: typescript Security Audit
 on:
   pull_request:
     paths:
@@ -455,7 +455,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check TypeScript Changes
+      - name: Check typescript Changes
         id: check
         uses: ./actions/ts/gitStatusCheck
 
@@ -502,7 +502,7 @@ jobs:
     if: needs.check-source-changes.outputs.generate-needed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Generate TypeScript Code
+      - name: Generate typescript Code
         run: |
           npm run generate:types
           npm run generate:api-client
@@ -589,16 +589,16 @@ jobs:
 ### Debugging Commands
 
 ```bash
-# Check TypeScript files
+# Check typescript files
 find . -name "*.ts" -o -name "package.json" -o -name "package-lock.json"
 
-# Check TypeScript configuration
+# Check typescript configuration
 cat tsconfig.json
 
 # Check git differences
 git diff --name-only origin/main | grep -E '\.(ts|json)$'
 
-# Validate TypeScript setup
+# Validate typescript setup
 npx tsc --version
 npx tsc --noEmit
 ```
@@ -655,14 +655,14 @@ Replace manual file checking:
 
 ```yaml
 # Before: Manual commands
-- name: Check TypeScript Changes
+- name: Check typescript Changes
   run: |
     if git diff --name-only origin/main | grep -E '\.(ts|json)$'; then
       echo "ts_changed=true" >> $GITHUB_OUTPUT
     fi
 
 # After: Use action
-- name: Check TypeScript Changes
+- name: Check typescript Changes
   id: check
   uses: ./actions/ts/gitStatusCheck
 ```

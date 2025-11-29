@@ -107,7 +107,7 @@ jobs:
         with:
           branch: ${{ github.base_ref }}
 
-      - name: Validate Workflows
+      - name: Validate workflows
         if: steps.workflow-check.outputs.shouldRun == 'true'
         run: |
           echo "Workflow files changed, running validation..."

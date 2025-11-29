@@ -1,3 +1,7 @@
+---
+title: PHP Duster Fix
+---
+
 # PHP Duster Fix Workflow v3 Migration Guide
 
 ## Overview

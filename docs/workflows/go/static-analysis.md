@@ -49,7 +49,7 @@ with:
 For single-module Go projects:
 
 ```yaml
-- name: Standard Go Analysis
+- name: Standard go Analysis
   uses: golangci/golangci-lint-action@v8
   with:
     only-new-issues: false

@@ -7,11 +7,11 @@ version includes both breaking changes and complete removal of some workflows.
 
 ## 📋 Migration Summary
 
-| Workflow                      | Change Type             | Status               | Migration Guide                                            |
-|-------------------------------|-------------------------|----------------------|------------------------------------------------------------|
-| `php_test.yml`                | 🔄 **Breaking Changes** | Modified             | [php_test.md](./php_test.md)                               |
-| `php_test_phpunit.yml`        | ❌ **Removed**           | Deleted              | [php_test_phpunit.md](./php_test_phpunit.md)               |
-| `php_dusterFix.yml`           | 🔄 **Replaced**         | Replaced with Action | [php_dusterFix.md](./php_dusterFix.md)                     |
+| Workflow               | Change Type             | Status               | Migration Guide                            |
+|------------------------|-------------------------|----------------------|--------------------------------------------|
+| `php_test.yml`         | 🔄 **Breaking Changes** | Modified             | [php_test.md](php-test.md)                 |
+| `php_test_phpunit.yml` | ❌ **Removed**           | Deleted              | [php_test_phpunit.md](php-test-phpunit.md) |
+| `php_dusterFix.yml`    | 🔄 **Replaced**         | Replaced with Action | [php_dusterFix.md](php-duster-fix.md)      |
 
 ## 🚨 Breaking Changes
 
@@ -30,14 +30,14 @@ version includes both breaking changes and complete removal of some workflows.
 
 ### PHP Testing Changes
 
-#### [php_test.yml - Breaking Changes](./php_test.md)
+#### [php_test.yml - Breaking Changes](php-test.md)
 
 - ❌ Removed: `enforceCoverage`, `minCodeCoverage`, `runParallel` parameters
 - 🔄 Changed: Default PHP version from 8.2 to 8.3
 - 🔄 Changed: Now uses `composer run test` command
 - ✅ Required: Must configure test script in `composer.json`
 
-#### [php_test_phpunit.yml - Workflow Removed](./php_test_phpunit.md)
+#### [php_test_phpunit.yml - Workflow Removed](php-test-phpunit.md)
 
 - ❌ **Complete Removal**: Workflow no longer exists
 - 🔄 **Migration Path**: Use unified `php_test.yml` workflow
@@ -46,7 +46,7 @@ version includes both breaking changes and complete removal of some workflows.
 
 ### Code Style Changes
 
-#### [php_dusterFix.yml - Replaced with Action](./php_dusterFix.md)
+#### [php_dusterFix.yml - Replaced with Action](php-duster-fix.md)
 
 - ❌ **Workflow Removed**: No longer available as reusable workflow
 - 🔄 **Replacement**: Use `actions/php/codeStyle` action

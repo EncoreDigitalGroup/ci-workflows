@@ -1,3 +1,7 @@
+---
+title: PHP Test
+---
+
 # PHP Test Workflow v3 Upgrade Guide
 
 ## Overview

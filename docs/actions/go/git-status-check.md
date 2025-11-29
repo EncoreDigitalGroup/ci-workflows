@@ -25,13 +25,13 @@ files have changed.
 ## Usage
 
 ```yaml
-- name: Check Go File Changes
+- name: Check go File Changes
   id: go-check
   uses: ./actions/go/gitStatusCheck
   with:
     branch: main
 
-- name: Run Go Build
+- name: Run go Build
   if: steps.go-check.outputs.shouldRun == 'true'
   run: go build ./...
 ```
@@ -80,7 +80,7 @@ go.sum
 ### Go Build Pipeline
 
 ```yaml
-name: Go Build Pipeline
+name: go Build Pipeline
 on:
   pull_request:
     branches: [main]
@@ -93,7 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for Go Changes
+      - name: Check for go Changes
         id: check
         uses: ./actions/go/gitStatusCheck
         with:
@@ -106,7 +106,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
@@ -121,7 +121,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
@@ -146,7 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Dependencies
+      - name: Check go Dependencies
         id: deps-check
         uses: ./actions/go/gitStatusCheck
         with:
@@ -168,7 +168,7 @@ jobs:
 ### Multi-Module Project
 
 ```yaml
-name: Multi-Module Go Project
+name: Multi-Module go Project
 on:
   push:
     branches: [main, develop]
@@ -181,7 +181,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Changes
+      - name: Check go Changes
         id: check
         uses: ./actions/go/gitStatusCheck
 
@@ -195,7 +195,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
+      - name: Set up go
         uses: actions/setup-go@v5
         with:
           go-version: '1.24'
@@ -208,7 +208,7 @@ jobs:
 ### Static Analysis Pipeline
 
 ```yaml
-name: Go Static Analysis
+name: go Static Analysis
 on:
   pull_request:
 
@@ -220,7 +220,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go File Changes
+      - name: Check go File Changes
         id: check
         uses: ./actions/go/gitStatusCheck
         with:
@@ -240,7 +240,7 @@ jobs:
 ### Performance-Optimized Pipeline
 
 ```yaml
-name: Optimized Go Pipeline
+name: Optimized go Pipeline
 on:
   pull_request:
 
@@ -252,7 +252,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Changes
+      - name: Check go Changes
         id: go
         uses: ./actions/go/gitStatusCheck
 
@@ -278,7 +278,7 @@ jobs:
 ### Cross-Platform Conditional Builds
 
 ```yaml
-name: Cross-Platform Go Build
+name: Cross-Platform go Build
 on:
   push:
     tags:
@@ -292,7 +292,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Changes Since Last Tag
+      - name: Check go Changes Since Last Tag
         id: check
         uses: ./actions/go/gitStatusCheck
         with:
@@ -317,7 +317,7 @@ jobs:
 ### Workspace-Aware Checking
 
 ```yaml
-name: Go Workspace Pipeline
+name: go Workspace Pipeline
 on:
   pull_request:
 
@@ -329,7 +329,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Workspace Changes
+      - name: Check go Workspace Changes
         id: check
         uses: ./actions/go/gitStatusCheck
 
@@ -375,7 +375,7 @@ jobs:
 ### Go Version Compatibility
 
 ```yaml
-name: Go Version Compatibility
+name: go Version Compatibility
 on:
   pull_request:
 
@@ -387,7 +387,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Changes
+      - name: Check go Changes
         id: check
         uses: ./actions/go/gitStatusCheck
 
@@ -399,7 +399,7 @@ jobs:
       matrix:
         go-version: ['1.22', '1.23', '1.24']
     steps:
-      - name: Test with Go ${{ matrix.go-version }}
+      - name: Test with go ${{ matrix.go-version }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
@@ -423,7 +423,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check Go Source Changes
+      - name: Check go Source Changes
         id: check
         uses: ./actions/go/gitStatusCheck
 
@@ -432,7 +432,7 @@ jobs:
     if: needs.check-source-changes.outputs.generate-needed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Run Go Generate
+      - name: Run go Generate
         run: go generate ./...
 
       - name: Check for Changes
@@ -494,13 +494,13 @@ with:
 ### Debugging Commands
 
 ```bash
-# Check Go files manually
+# Check go files manually
 find . -name "*.go" -o -name "go.mod" -o -name "go.sum"
 
 # Check git differences
 git diff --name-only origin/main | grep -E '\.(go|mod|sum)$'
 
-# Verify Go module structure
+# Verify go module structure
 go list -m all
 ```
 
@@ -535,7 +535,7 @@ on:
       - 'go.mod'
       - 'go.sum'
 
-# After: Go-specific checking
+# After: go-specific checking
 on:
   pull_request:
 
@@ -552,14 +552,14 @@ Replace manual git status checks:
 
 ```yaml
 # Before: Manual commands
-- name: Check Go Changes
+- name: Check go Changes
   run: |
     if git diff --name-only origin/main | grep -E '\.(go|mod|sum)$'; then
       echo "go_changed=true" >> $GITHUB_OUTPUT
     fi
 
 # After: Use action
-- name: Check Go Changes
+- name: Check go Changes
   id: check
   uses: ./actions/go/gitStatusCheck
 ```

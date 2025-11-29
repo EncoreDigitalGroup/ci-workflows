@@ -186,7 +186,7 @@ strategy:
     php-version: ['8.2', '8.3']
 
 steps:
-  - name: Apply Rector for PHP ${{ matrix.php-version }}
+  - name: Apply Rector for php ${{ matrix.php-version }}
     uses: ./actions/php/rector
     with:
       repository: ${{ github.repository }}

@@ -25,13 +25,13 @@ assets, enabling conditional workflow execution.
 ## Usage
 
 ```yaml
-- name: Check PHP File Changes
+- name: Check php File Changes
   id: php-check
   uses: ./actions/php/gitStatusCheck
   with:
     branch: main
 
-- name: Run PHP Tests
+- name: Run php Tests
   if: steps.php-check.outputs.shouldRun == 'true'
   run: composer test
 ```
@@ -100,7 +100,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for PHP Changes
+      - name: Check for php Changes
         id: check
         uses: ./actions/php/gitStatusCheck
         with:
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP
+      - name: Setup php
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
@@ -188,12 +188,12 @@ jobs:
     if: needs.detect-changes.outputs.backend-changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Setup PHP Environment
+      - name: Setup php Environment
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
 
-      - name: Run PHP Tests
+      - name: Run php Tests
         run: composer test
 
       - name: Build Assets (if package.json changed)
@@ -249,7 +249,7 @@ jobs:
 ### Performance-Optimized Pipeline
 
 ```yaml
-name: Optimized PHP Pipeline
+name: Optimized php Pipeline
 on:
   pull_request:
 
@@ -261,7 +261,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check PHP Changes
+      - name: Check php Changes
         id: check
         uses: ./actions/php/gitStatusCheck
 
@@ -270,7 +270,7 @@ jobs:
     if: needs.quick-check.outputs.php-changed == 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: PHP Syntax Check
+      - name: php Syntax Check
         run: find . -name "*.php" -exec php -l {} \;
 
   comprehensive-testing:
@@ -288,7 +288,7 @@ jobs:
 ### Multi-Environment Deployment
 
 ```yaml
-name: Multi-Environment PHP Deployment
+name: Multi-Environment php Deployment
 on:
   push:
     branches: [main, staging, develop]
@@ -325,7 +325,7 @@ jobs:
 ### Code Quality Pipeline
 
 ```yaml
-name: PHP Code Quality
+name: php Code Quality
 on:
   pull_request:
 
@@ -337,7 +337,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check PHP Code Changes
+      - name: Check php Code Changes
         id: check
         uses: ./actions/php/gitStatusCheck
 
@@ -424,7 +424,7 @@ jobs:
 ### Multi-Version PHP Testing
 
 ```yaml
-name: PHP Version Compatibility
+name: php Version Compatibility
 on:
   pull_request:
 
@@ -436,7 +436,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check PHP Changes
+      - name: Check php Changes
         id: check
         uses: ./actions/php/gitStatusCheck
 
@@ -448,7 +448,7 @@ jobs:
       matrix:
         php-version: ['8.1', '8.2', '8.3']
     steps:
-      - name: Setup PHP ${{ matrix.php-version }}
+      - name: Setup php ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
@@ -512,7 +512,7 @@ jobs:
 ### Debugging Commands
 
 ```bash
-# Check PHP files
+# Check php files
 find . -name "*.php" -o -name "composer.json" -o -name "composer.lock"
 
 # Check Node.js files
@@ -567,14 +567,14 @@ Replace manual file checking:
 
 ```yaml
 # Before: Manual commands
-- name: Check PHP Changes
+- name: Check php Changes
   run: |
     if git diff --name-only origin/main | grep -E '\.(php|json)$'; then
       echo "php_changed=true" >> $GITHUB_OUTPUT
     fi
 
 # After: Use action
-- name: Check PHP Changes
+- name: Check php Changes
   id: check
   uses: ./actions/php/gitStatusCheck
 ```
