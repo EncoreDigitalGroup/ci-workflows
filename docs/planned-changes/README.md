@@ -1,5 +1,6 @@
 ---
 title: Planned Changes
+sidebar_position: 4
 ---
 
 # Planned Changes
