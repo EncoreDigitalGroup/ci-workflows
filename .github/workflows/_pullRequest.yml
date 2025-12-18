@@ -4,7 +4,7 @@ on:
     pull_request:
         paths:
             - 'actions/**/Dockerfile'
-            - 'actions/**/main.go'
+            - 'actions/**/*.go'
             - 'actions/**/go.mod'
             - 'actions/**/go.sum'
             - 'actions/**/action.yml'
